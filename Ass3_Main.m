@@ -48,4 +48,6 @@ A(f_over) = 0;      % Remove the amplitudes where the data wasnt good
 
 fr = [f,flip(f)]; % Reconstructed frequency signal 
 Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
-u_lp = real
+
+u_lpf = real(ifft(Ar));
+figure ; plot(u_lpf(1:N/2+1))

@@ -5,4 +5,26 @@
 %
 % Main Script
 %% Import Data
-D = importdata('MATLAB/Data/u_hf_ypos1.bin');
+clc, clear, close all
+
+fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
+data = fread(fid, '*double');
+
+%% See whats in the box today
+close 
+G = fft(data);
+N = length(G);
+A = sqrt (4*(G./N).*(conj(G/N)) );
+
+up2nyq = 1:1:N/2+1;
+
+f = 
+
+figure ; plot(up2nyq,A(up2nyq)) ; title('Energy Data'); 
+ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
+
+figure ; plot(up2nyq,A(up2nyq)) ; title('Energy Data'); 
+ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
+
+% data(1:100)
+% plot(data(1:100))

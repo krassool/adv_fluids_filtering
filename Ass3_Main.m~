@@ -5,5 +5,4 @@
 %
 % Main Script
 %% Import Data
-
 D = importdata('MATLAB/Data/u_hf_ypos1.bin');

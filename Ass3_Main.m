@@ -43,11 +43,13 @@ f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable
 A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
 
 f(f_over) = 0 ;              % Remove the entires where the data wasnt good
-A_sensible(f_over) = 0;      % Remove the amplitudes where the data wasnt good
-A(f_over) = 0;      % Remove the amplitudes where the data wasnt good
+f_allover = [f_over, max(f_over)+1:1:max(f_over)+1+length(f_over)  ];
+G_lpf = G(f_allover) ;
+% A_sensible(f_over) = 0 ;     % Remove the amplitudes where the data wasnt good
+% A(f_over) = 0 ; % Remove the amplitudes where the data wasnt good
 
 fr = [f,flip(f)]; % Reconstructed frequency signal 
-Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
+% Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
 
-u_lpf = real(ifft(Ar)) ; % re-construct the signal from the clipped data
+u_lpf = real(ifft(G_lpf)) ; % re-construct the signal from the clipped data
 figure ; plot(u_lpf(1:N/2+1)) % Plot the result

@@ -21,10 +21,10 @@ N = length(clip) ; % Length of the clipped time series signal
 A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
 
 Fs = 10e3 ; % Sampling frequency
-dt = 1/Fs ; 
-df = 1/(N.*dt) ;
+dt = 1/Fs ; % Time interval
+df = 1/(N.*dt) ; % Frequency interval
 n  = 0:1:(N/2) ; % All mode numbers up to nyquist
-f  = n.*df ;
+f  = n.*df ; % Frequency vector to match G/A
 
 cutof_f = 100 ; % Hz at which the data isnt good 
 
@@ -49,5 +49,5 @@ A(f_over) = 0;      % Remove the amplitudes where the data wasnt good
 fr = [f,flip(f)]; % Reconstructed frequency signal 
 Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
 
-u_lpf = real(ifft(Ar));
-figure ; plot(u_lpf(1:N/2+1))
+u_lpf = real(ifft(Ar)) ; % re-construct the signal from the clipped data
+figure ; plot(u_lpf(1:N/2+1)) % Plot the result

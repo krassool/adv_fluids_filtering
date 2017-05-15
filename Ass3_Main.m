@@ -8,7 +8,7 @@
 clc, clear, close all
 
 fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
-data = fread(fid, '*int16');
+data = fread(fid, '*double');
 
 %% See whats in the box today
 data(1:100)

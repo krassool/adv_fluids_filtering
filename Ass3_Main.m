@@ -13,7 +13,7 @@ data = fread(fid, '*double');
 %% See whats in the box today
 close all ; % Clear any existing figures
 
-up2  = 1e4          ; % Index up to which we will look at spectra 
+up2  = length(data)          ; % Index up to which we will look at spectra 
 clip = data(1:up2)  ; % Implement data clipping
 
 G = fft(clip) ; % Take an FFT of the data
@@ -26,6 +26,8 @@ df = 1/(N.*dt) ;
 n  = 0:1:(N/2) ; % All mode numbers up to nyquist
 f  = n.*df ;
 
+cutof_f = 100 ; % Hz at which the data isnt good 
+
 up2nyq = 1:1:N/2+1 ; % Frequency data that is valid
 dt     = 1/20      ; % Sampling interval = 1/f = 10kHz 
 
@@ -34,3 +36,16 @@ ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
 
 figure ; plot(f(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 
 ylabel('Fourier Amplitude') ; xlabel('Frequency')
+
+axis([0,3*cutof_f,0,6e-5]); % look at up2Hz frequencies
+
+f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable 
+A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
+
+f(f_over) = 0 ;              % Remove the entires where the data wasnt good
+A_sensible(f_over) = 0;      % Remove the amplitudes where the data wasnt good
+A(f_over) = 0;      % Remove the amplitudes where the data wasnt good
+
+fr = [f,flip(f)]; % Reconstructed frequency signal 
+Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
+u_lp = real

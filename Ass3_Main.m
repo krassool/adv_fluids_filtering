@@ -5,5 +5,11 @@
 %
 % Main Script
 %% Import Data
+clc, clear, close all
 
-D = importdata('MATLAB/Data/u_hf_ypos1.bin');
+fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
+data = fread(fid, '*int16');
+
+%% See whats in the box today
+data(1:100)
+plot(data(1:100))

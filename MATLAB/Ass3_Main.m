@@ -13,7 +13,7 @@ data = fread(fid, '*double');
 %% See whats in the box today
 close all ; % Clear any existing figures
 
-up2  = 1e4          ; % Index up to which we will look at spectra 
+up2  = length(data)          ; % Index up to which we will look at spectra 
 clip = data(1:up2)  ; % Implement data clipping
 
 G = fft(clip) ; % Take an FFT of the data
@@ -21,10 +21,10 @@ N = length(clip) ; % Length of the clipped time series signal
 A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
 
 Fs = 10e3 ; % Sampling frequency
-dt = 1/Fs ; 
-df = 1/(N.*dt) ;
+dt = 1/Fs ; % Time interval
+df = 1/(N.*dt) ; % Frequency interval
 n  = 0:1:(N/2) ; % All mode numbers up to nyquist
-f  = n.*df ;
+f  = n.*df ; % Frequency vector to match G/A
 
 cutof_f = 100 ; % Hz at which the data isnt good 
 
@@ -39,14 +39,17 @@ ylabel('Fourier Amplitude') ; xlabel('Frequency')
 
 axis([0,3*cutof_f,0,6e-5]); % look at up2Hz frequencies
 
-f_over = find (f > cutof_f);
+f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable 
+A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
 
-f(f_over)=[];
-A(f_over)=[];
+f(f_over) = 0 ;              % Remove the entires where the data wasnt good
+f_allover = [f_over, max(f_over)+1:1:max(f_over)+1+length(f_over)  ];
+G_lpf = G() ;
+% A_sensible(f_over) = 0 ;     % Remove the amplitudes where the data wasnt good
+% A(f_over) = 0 ; % Remove the amplitudes where the data wasnt good
 
-size(f_over)
-size(A)
-size(f)
+fr = [f,flip(f)]; % Reconstructed frequency signal 
+% Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
 
-figure ; plot(f,A) ; title('Energy Information, clipped up2f'); 
-ylabel('Fourier Amplitude') ; xlabel('Frequency')
+u_lpf = real(ifft(G_lpf)) ; % re-construct the signal from the clipped data
+figure ; plot(u_lpf(1:N/2+1)) % Plot the result

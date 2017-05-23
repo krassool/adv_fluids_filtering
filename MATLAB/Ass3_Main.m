@@ -13,20 +13,9 @@ data = fread(fid, '*float');
 fid_y = fopen('MATLAB/Data/y.txt','r');
 data_y = fscanf(fid_y, '%f');
 
-%% See whats in the box today
-close all ; % Clear any existing figures
-
-up2  = length(data)          ; % Index up to which we will look at spectra 
-clip = data(1:up2)  ; % Implement data clipping
-
-G = fft(clip) ; % Take an FFT of the data
-N = length(clip) ; % Length of the clipped time series signal
-A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
 %% Things that are mostly constant
 
 Re_tau = 14000 ; % Reynolds shear stress
-y0 = 0.27      ; % Initial wall normal location
-yf = 450       ; % APPROXIMATE final wall normal location
 n_pos = 40     ; % Number of wall normal position
 Fs = 10e3      ; % Sampling frequency
 
@@ -38,13 +27,23 @@ df = 1/(N.*dt) ; % Frequency interval
 n  = 0:1:(N/2) ; % All mode numbers up to nyquist
 f  = n.*df     ; % Frequency vector to match G/A
 
+%% See whats in the box today
 
+close all ; % Clear any existing figures
+
+up2  = length(data)          ; % Index up to which we will look at spectra 
+clip = data(1:up2)  ; % Implement data clipping
+
+G = fft(clip) ; % Take an FFT of the data
+N = length(clip) ; % Length of the clipped time series signal
+A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
 
 cutof_f = 100 ; % Hz at which the data isnt good 
 
 up2nyq = 1:1:N/2+1 ; % Frequency data that is valid
 dt     = 1/20      ; % Sampling interval = 1/f = 10kHz 
 
+%%  Plot some information about the signals
 figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 
 ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
 

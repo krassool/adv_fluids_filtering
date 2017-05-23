@@ -10,6 +10,10 @@ clc, clear, close all
 fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
 data = fread(fid, '*float');
 
+
+fid = fopen('MATLAB/Data/y.txt', 'r');
+data = fread(fid, '*float');
+
 %% See whats in the box today
 close all ; % Clear any existing figures
 
@@ -21,16 +25,21 @@ N = length(clip) ; % Length of the clipped time series signal
 A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
 %% Things that are mostly constant
 
-Fs = 10e3 ; % Sampling frequency
-dt = 1/Fs ; % Time interval
-df = 1/(N.*dt) ; % Frequency interval
-n  = 0:1:(N/2) ; % All mode numbers up to nyquist
-f  = n.*df ; % Frequency vector to match G/A
-
 Re_tau = 14000 ; % Reynolds shear stress
 y0 = 0.27      ; % Initial wall normal location
 yf = 450       ; % APPROXIMATE final wall normal location
 n_pos = 40     ; % Number of wall normal position
+Fs = 10e3      ; % Sampling frequency
+
+delta = 0.326  ; % Boundary layer thickness (m)
+
+tf = 30        ; % Experiment time (s)
+dt = 1/Fs      ; % Time interval
+df = 1/(N.*dt) ; % Frequency interval
+n  = 0:1:(N/2) ; % All mode numbers up to nyquist
+f  = n.*df     ; % Frequency vector to match G/A
+
+
 
 cutof_f = 100 ; % Hz at which the data isnt good 
 

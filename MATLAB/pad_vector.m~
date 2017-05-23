@@ -1,0 +1,21 @@
+function [ ] = pad_vector(vec1,vec2)
+%pads the edge of the matrix with zeros
+%Takes the input of 
+%wsize is of the form: '(rows, cols)'
+
+v1_len=length(vec1);
+v2_len=length(vec2);
+
+padded_size=(v2_len-1)*2+v1_len
+
+padded_matrix=zeros(padded_size,1)
+% 
+% %determine the extent of the image inside the pad
+right_extent=padded_size(2)-(wsize-1);
+top_extent=wsize;
+bottom_extent=padded_size(1)-(wsize-1);
+padded_matrix(top_extent:bottom_extent,left_extent:right_extent)=image_array;
+
+end
+
+

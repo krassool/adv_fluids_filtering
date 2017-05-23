@@ -63,7 +63,7 @@ title('high pass filtered data')
 
 %% Cross correlation manually 
 
-R = 
+
 
 %%  Plot some information about the signals
 figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 

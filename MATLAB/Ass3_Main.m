@@ -10,9 +10,8 @@ clc, clear, close all
 fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
 data = fread(fid, '*float');
 
-
-fid = fopen('MATLAB/Data/y.txt', 'r');
-data = fread(fid, '*float');
+fid_y = fopen('MATLAB/Data/y.txt','r');
+data_y = fscanf(fid_y, '%f');
 
 %% See whats in the box today
 close all ; % Clear any existing figures

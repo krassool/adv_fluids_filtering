@@ -7,8 +7,8 @@
 %% Import Data
 clc, clear, close all
 
-fid = fopen('MATLAB/Data/u_hf_ypos1.bin', 'r');
-data = fread(fid, '*float');
+fid = fopen('MATLAB/Data/u_hf_ypos3.bin', 'r');
+Y3 = fread(fid, '*double') ;
 
 fid_y = fopen('MATLAB/Data/y.txt','r');
 data_y = fscanf(fid_y, '%f');
@@ -21,27 +21,49 @@ Fs = 10e3      ; % Sampling frequency
 
 delta = 0.326  ; % Boundary layer thickness (m)
 
+N = length(Y3) ; % Length of the clipped time series signal
 tf = 30        ; % Experiment time (s)
 dt = 1/Fs      ; % Time interval
 df = 1/(N.*dt) ; % Frequency interval
 n  = 0:1:(N/2) ; % All mode numbers up to nyquist
 f  = n.*df     ; % Frequency vector to match G/A
 
-%% See whats in the box today
+%% Low pass / High pass filtering
 
 close all ; % Clear any existing figures
 
-up2  = length(data)          ; % Index up to which we will look at spectra 
-clip = data(1:up2)  ; % Implement data clipping
+% Implement fourier transformation
+Glpf = fft(Y3)./N           ; % Take an FFT of the data, normalise to length
+A = sqrt(4*(Glpf.*conj(Glpf))) ; % Amplitude function
 
-G = fft(clip) ; % Take an FFT of the data
-N = length(clip) ; % Length of the clipped time series signal
-A = sqrt (4*(G./N).*(conj(G/N)) ) ; % Amplitude 
+hf_f_lim = 100        ; % Freqeuncies beyond which the hotfilm is not reliable 
+cutoff_hf = hf_f_lim  ; % High frequency cut off
 
-cutof_f = 100 ; % Hz at which the data isnt good 
+[~,n_c_lpf] = min(abs(f-cutoff_hf)) ; % Find frequencies closest to cut-off 
+Glpf(n_c_lpf:end-n_c_lpf+2) = 0        ; % Cut off them high frequncies
+u_lpf = N.*real(ifft(Glpf))            ; % re-construct the fourier signal
 
-up2nyq = 1:1:N/2+1 ; % Frequency data that is valid
-dt     = 1/20      ; % Sampling interval = 1/f = 10kHz 
+figure ; plot(Y3) ; hold on ; plot(u_lpf) ; axis([0,1e3,0,3e-3]) ;
+title('High pass filtered data')
+
+%% High pass filter 
+
+close all
+
+Ghpf = fft(Y3)./N  ; % Take an FFT of the data, normalise to length
+cutoff_lf   = 5                        ; % Low frequency cut off 
+[~,n_c_hpf] = min(abs(f-cutoff_lf))   ; % Find frequencies closest to cut-off 
+Ghpf(1:n_c_hpf)         = 0            ; % Cut off them pre nyqist low frequncies
+Ghpf(end-n_c_hpf+2:end) = 0            ; % Cut off them post nyquist low frequncies
+
+u_lpf_hpf = N.*real(ifft(Ghpf))        ; % Re-construct the fourier signal
+
+figure ; plot(Y3) ; hold on ; plot(u_lpf_hpf) ; axis([0,1e3,0,3e-3]) ;
+title('high pass filtered data')
+
+%% Cross correlation manually 
+
+R = 
 
 %%  Plot some information about the signals
 figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 
@@ -57,7 +79,7 @@ A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
 
 f(f_over) = 0 ;              % Remove the entires where the data wasnt good
 f_allover = [f_over, max(f_over)+1:1:max(f_over)+1+length(f_over)  ];
-G_lpf = G() ;
+G_lpf = Glpf() ;
 % A_sensible(f_over) = 0 ;     % Remove the amplitudes where the data wasnt good
 % A(f_over) = 0 ; % Remove the amplitudes where the data wasnt good
 

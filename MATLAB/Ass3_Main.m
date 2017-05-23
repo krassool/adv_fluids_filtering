@@ -28,8 +28,9 @@ n  = 0:1:(N/2) ; % All mode numbers up to nyquist
 f  = n.*df ; % Frequency vector to match G/A
 
 Re_tau = 14000 ; % Reynolds shear stress
-y0 = 0.27 ;
-yf = 
+y0 = 0.27      ; % Initial wall normal location
+yf = 450       ; % APPROXIMATE final wall normal location
+n_pos = 40     ; % Number of wall normal position
 
 cutof_f = 100 ; % Hz at which the data isnt good 
 

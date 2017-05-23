@@ -1,20 +1,18 @@
-function [ ] = pad_vector(vec1,vec2)
+function [padded_matrix] = pad_vector(template_vec,search_region_vec)
 %pads the edge of the matrix with zeros
 %Takes the input of 
-%wsize is of the form: '(rows, cols)'
+%the 'template' is the smaller vector which is passed over the top of the 
+%'search region'
+te_len=length(template_vec);
+sr_len=length(search_region_vec);
 
-v1_len=length(vec1);
-v2_len=length(vec2);
+padded_size=(sr_len-1)*2+te_len
+padded_matrix=zeros(padded_size,1) %initialise pad
 
-padded_size=(v2_len-1)*2+v1_len
-
-padded_matrix=zeros(padded_size,1)
-% 
 % %determine the extent of the image inside the pad
-right_extent=padded_size(2)-(wsize-1);
-top_extent=wsize;
-bottom_extent=padded_size(1)-(wsize-1);
-padded_matrix(top_extent:bottom_extent,left_extent:right_extent)=image_array;
+top_extent=te_len;
+bottom_extent=padded_size-(te_len-1);
+padded_matrix(top_extent:bottom_extent)=search_region_vec
 
 end
 

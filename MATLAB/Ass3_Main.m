@@ -36,23 +36,23 @@ close all ; % Clear any existing figures
 Glpf = fft(hf_Y3)./N           ; % Take an FFT of the data, normalise to length
 A = sqrt(4*(Glpf.*conj(Glpf))) ; % Amplitude function
 
-hf_f_lim = 100        ; % Freqeuncies beyond which the hotfilm is not reliable 
+hf_f_lim = 100        ; % Freqeuncies beyond which the hotfilm is not reliable
 cutoff_hf = hf_f_lim  ; % High frequency cut off
 
-[~,n_c_lpf] = min(abs(f-cutoff_hf)) ; % Find frequencies closest to cut-off 
+[~,n_c_lpf] = min(abs(f-cutoff_hf)) ; % Find frequencies closest to cut-off
 Glpf(n_c_lpf:end-n_c_lpf+2) = 0        ; % Cut off them high frequncies
 u_lpf = N.*real(ifft(Glpf))            ; % re-construct the fourier signal
 
 figure ; plot(hf_Y3) ; hold on ; plot(u_lpf) ; axis([0,1e3,0,3e-3]) ;
 title('High pass filtered data')
 
-%% High pass filter 
+%% High pass filter
 
 close all
 
 Ghpf = fft(hf_Y3)./N  ; % Take an FFT of the data, normalise to length
-cutoff_lf   = 5                        ; % Low frequency cut off 
-[~,n_c_hpf] = min(abs(f-cutoff_lf))   ; % Find frequencies closest to cut-off 
+cutoff_lf   = 5                        ; % Low frequency cut off
+[~,n_c_hpf] = min(abs(f-cutoff_lf))   ; % Find frequencies closest to cut-off
 Ghpf(1:n_c_hpf)         = 0            ; % Cut off them pre nyqist low frequncies
 Ghpf(end-n_c_hpf+2:end) = 0            ; % Cut off them post nyquist low frequncies
 
@@ -61,20 +61,20 @@ u_lpf_hpf = N.*real(ifft(Ghpf))        ; % Re-construct the fourier signal
 figure ; plot(hf_Y3) ; hold on ; plot(u_lpf_hpf) ; axis([0,1e3,0,3e-3]) ;
 title('high pass filtered data')
 
-%% Cross correlation manually 
+%% Cross correlation manually
 
 
 
 %%  Plot some information about the signals
-% figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 
+% figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information');
 % ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
-% 
-% figure ; plot(f(2:end),A(up2nyq(2:end))) ; title('Energy Information'); 
+%
+% figure ; plot(f(2:end),A(up2nyq(2:end))) ; title('Energy Information');
 % ylabel('Fourier Amplitude') ; xlabel('Frequency')
-% 
+%
 % axis([0,3*cutof_f,0,6e-5]); % look at up2Hz frequencies
-% 
-% f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable 
+%
+% f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable
 % A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
 
 % f(f_over) = 0 ;              % Remove the entires where the data wasnt good
@@ -83,7 +83,7 @@ title('high pass filtered data')
 % A_sensible(f_over) = 0 ;     % Remove the amplitudes where the data wasnt good
 % A(f_over) = 0 ; % Remove the amplitudes where the data wasnt good
 
-% fr = [f,flip(f)]; % Reconstructed frequency signal 
+% fr = [f,flip(f)]; % Reconstructed frequency signal
 % Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
 
 % u_lpf = real(ifft(G_lpf)) ; % re-construct the signal from the clipped data
@@ -91,16 +91,54 @@ title('high pass filtered data')
 
 
 %% Qn3, Cross Correlation
+%%%%MUST USE FILTERED DATA!!!! %%%
 
 fid_hw = fopen('MATLAB/Data/u_hw_ypos3.bin', 'r');
 hw_Y3 = fread(fid_hw, '*double') ;
 
-fft_cross_corr=xcorr(hw_Y3,hf_Y3);
+%Choose vectors to compare
+template=hw_Y3(1:20);      %template vector
+sr=hw_Y3(1:20);            %search region vector
+%pad the search region with zeros
+sr_padded=pad_vector(template,sr); %create padded search region
+%calculate the std dev of template
+std_d_tem=std(template);
+%determine the maximum lag and initialise results vector
+lags=length(sr_padded)-length(template);
+R_st=zeros(length(lags));
 
-%Pad vectors
 
-v1=rand(4,1)
-v2=rand(4,1)
 
-pad_vector(v1,v2)
+tem_sym   = template-mean(template)             ; % t tranformed to be symmetric 
+
+for j = 1:lags+1;
+    sr_shifted = circshift(sr_padded,-j+1);            %shift the matrix by the lag
+    sr_clip    = sr_shifted(1:length(template));   %clip the sr to template size
+%     A_sym = A_clip - A_clip_mean;            % A tranformed to be symmetric
+
+        sr_clip_mean = mean2(sr_clip);             % Mean of this region
+        sr_sym = sr_clip - sr_clip_mean;            % A tranformed to be symmetric 
+              
+    
+        Rnum  = sum(sum((tem_sym).*(sr_sym)));      % First factor for R
+        Rden1 = sum(sum((tem_sym).^2));            % denominator f1
+        Rden2 = sum(sum((sr_sym).^2));            % denominator f2
+        R     = (Rnum)/(sqrt(Rden1*Rden2));      % Cross correlation coefficient
+        R_st(j) = R;                           % Store correlation coeff
+    
+        
+        % 
+    Rnum  = sum(sr_clip.*(template));      % First factor for R
+    R     = (Rnum);%/(std(sr_clip)*std_d_tem);      % Cross correlation coefficient
+    R_st(j) = R;                           % Store correlation coeff
+
+        
+end
+
+R_manual=(R_st/length(template))'
+fft_cross_corr=xcorr(template,sr)
+
+
+
+
 

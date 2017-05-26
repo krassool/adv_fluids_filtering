@@ -59,7 +59,7 @@ Ghpf(end-n_c_hpf+2:end) = 0            ; % Cut off them post nyquist low frequnc
 u_lpf_hpf = N.*real(ifft(Ghpf))        ; % Re-construct the fourier signal
 
 figure ; plot(hf_Y3) ; hold on ; plot(u_lpf_hpf) ; axis([0,1e3,0,3e-3]) ;
-title('high pass filtered data')
+title('Original and high pass filtered data') ; xlabel('Time axis'); ylabel('');
 
 %% Cross correlation manually
 
@@ -94,48 +94,47 @@ title('high pass filtered data')
 %%%%MUST USE FILTERED DATA!!!! %%%
 
 fid_hw = fopen('MATLAB/Data/u_hw_ypos3.bin', 'r');
-hw_Y3 = fread(fid_hw, '*double') ;
+hw_Y3  = fread(fid_hw, '*double') ;
 
 %Choose vectors to compare
-template=hw_Y3(1:20);      %template vector
-sr=hw_Y3(1:20);            %search region vector
-%pad the search region with zeros
-sr_padded=pad_vector(template,sr); %create padded search region
-%calculate the std dev of template
-std_d_tem=std(template);
+template = hw_Y3(1:20) ;  % Template vector
+sr       = hw_Y3(1:20) ;  % Search region vector
+
+% Pad the search region with zeros
+sr_padded = pad_vector(template,sr); % Create padded search region
+
+% Calculate the std dev of template
+std_d_tem = std(template);
+
 %determine the maximum lag and initialise results vector
-lags=length(sr_padded)-length(template);
-R_st=zeros(length(lags));
+lags  = length(sr_padded)-length(template) ; 
+R_st  = zeros(length(lags)) ;
 
+tem_sym   = template-mean(template)             ; % T tranformed to be symmetric 
 
-
-tem_sym   = template-mean(template)             ; % t tranformed to be symmetric 
-
+tic
 for j = 1:lags+1;
-    sr_shifted = circshift(sr_padded,-j+1);            %shift the matrix by the lag
-    sr_clip    = sr_shifted(1:length(template));   %clip the sr to template size
-%     A_sym = A_clip - A_clip_mean;            % A tranformed to be symmetric
+    sr_shifted = circshift(sr_padded,-j+1);        % Shift the matrix by the lag
+    sr_clip    = sr_shifted(1:length(template));   % Clip the sr to template size
+%     A_sym = A_clip - A_clip_mean;                % A tranformed to be symmetric
 
         sr_clip_mean = mean2(sr_clip);             % Mean of this region
-        sr_sym = sr_clip - sr_clip_mean;            % A tranformed to be symmetric 
+        sr_sym = sr_clip - sr_clip_mean;           % A tranformed to be symmetric 
               
-    
-        Rnum  = sum(sum((tem_sym).*(sr_sym)));      % First factor for R
-        Rden1 = sum(sum((tem_sym).^2));            % denominator f1
-        Rden2 = sum(sum((sr_sym).^2));            % denominator f2
-        R     = (Rnum)/(sqrt(Rden1*Rden2));      % Cross correlation coefficient
+        Rnum  = sum(sum((tem_sym).*(sr_sym))); % First factor for R
+        Rden1 = sum(sum((tem_sym).^2));        % Denominator f1
+        Rden2 = sum(sum((sr_sym).^2));         % Denominator f2
+        R     = (Rnum)/(sqrt(Rden1*Rden2));    % Cross correlation coefficient
         R_st(j) = R;                           % Store correlation coeff
-    
-        
-        % 
+
     Rnum  = sum(sr_clip.*(template));      % First factor for R
     R     = (Rnum);%/(std(sr_clip)*std_d_tem);      % Cross correlation coefficient
     R_st(j) = R;                           % Store correlation coeff
-
-        
 end
 
-%FFT Cross COrr
+time_xcorr_oldschool = toc
+%% Compute FFT correlation
+
 
 u_zp= [zeros(size(template)),template];
 v_zp= [zeros(size(sr)),sr];

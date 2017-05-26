@@ -135,8 +135,19 @@ for j = 1:lags+1;
         
 end
 
-R_manual=(R_st/length(template))'
-fft_cross_corr=xcorr(template,sr)
+%FFT Cross COrr
+
+u_zp= [zeros(size(template)),template];
+v_zp= [zeros(size(sr)),sr];
+
+cc_fft= fftshift(ifft(conj(fft(u_zp)).*fft(v_zp)));
+
+%%WILL, this works but is just offset in terms of padding. The max values
+%%for correlation 
+% 
+% 
+% R_manual=(R_st/length(template))'
+% fft_cross_corr=xcorr(template,sr)
 
 
 

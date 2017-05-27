@@ -11,7 +11,7 @@ fid = fopen('MATLAB/Data/u_hf_ypos3.bin', 'r');
 hf_Y3 = fread(fid, '*float') ;
 
 fid_y = fopen('MATLAB/Data/y.txt','r');
-data_y = fscanf(fid_y, '%f');
+data_y = fscanf(fid_y, '%f')/1000;
 
 %% Things that are mostly constant
 
@@ -87,17 +87,20 @@ title('Original and high pass filtered data') ; xlabel('Time axis'); ylabel('');
 % u_lpf = real(ifft(G_lpf)) ; % re-construct the signal from the clipped data
 % figure ; plot(u_lpf(1:N/2+1)) % Plot the result
 
-
 %% Qn3, Cross Correlation
 %%%%MUST USE FILTERED DATA!!!! %%%
 
 fid_hw = fopen('MATLAB/Data/u_hw_ypos3.bin', 'r');
 hw_Y3  = fread(fid_hw, '*float') ;
-clip=50;
+clip=1000;
 
 %Choose vectors to compare %%WHICH ONE SHOULD BE HW and WHICH SHOULD BE HF?
-search_r = hw_Y3(1:clip) ;  % Template vector
-template = hf_Y3(1:clip) ;  % Search region vector
+search_r = hf_Y3(1:clip) ;  % Template vector
+template = hw_Y3(1:clip) ;  % Search region vector
+
+%Plot the two signals
+figure; subplot(2,1,1); plot(template,'-p'); subplot(2,1,2); plot(search_r,'r-*');
+
 
 %Mean subtract
 template_ms=template-mean(template);
@@ -108,7 +111,7 @@ search_r_ms_std=search_r_ms/std(search_r_ms);
 
 %pad vectors
 temp_zp3 = [zeros(size(template_ms));template_ms_std;zeros(size(template_ms))];
-sear_zp3 = [zeros(size(search_r_ms));template_ms_std;zeros(size(search_r_ms))];
+sear_zp3 = [zeros(size(search_r_ms));search_r_ms_std;zeros(size(search_r_ms))];
 N=length(template);
 
 %std deviation of search region
@@ -122,14 +125,14 @@ end
 R_lh=R_lh/N;
 
 %plot results
-figure;
+% figure;
 n_spat=[-N:1:N-1];
-plot(n_spat,R_lh)
-title('sptail')
+% plot(n_spat,R_lh)
+% title('sptail')
 
 %% Compute FFT correlation
 temp_zp2 = [zeros(size(template_ms));template_ms_std];
-sear_zp2 = [zeros(size(search_r_ms));template_ms_std];
+sear_zp2 = [zeros(size(search_r_ms));search_r_ms_std];
 N=length(template);
 
 %calculate cross corr
@@ -137,16 +140,18 @@ cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2))); %
 %n vector
 n_fft=[-N:1:N-1];
 
-figure;
-plot(n_fft,cc_fft)
-length(cc_fft)
-length(n_fft)
+% figure;
+% plot(n_fft,cc_fft)
+% length(cc_fft)
+% length(n_fft)
 
 %% Convert to required x-axis
 
 Delta_x_fft = -n_fft.*dt.*mean(search_r)   ;   %Mean of hotwire
-dx_on_delta=Delta_x_fft/delta;
-% Delta_x_spatial = -lag_spatial.*dt.*mean(search_r)   ;   %
+dx_on_delta_fft =Delta_x_fft/delta;
+Delta_x_spatial = -n_spat.*dt.*mean(search_r)   ;   %
+dx_on_delta_spat =Delta_x_spatial/delta;
+
 
 %% Plot Cross Corrs
 
@@ -156,23 +161,23 @@ plot(search_r,'r-*')
 % plot(template,'p-')
 legend('sr','template')
 
-% figure;
-% plot(Delta_x_fft,cc_fft)
-% title('FFT')
-% ax = gca; % current axes
-% ax.FontSize = 12;
-% ax.TickDir = 'out';
-% ax.TickLength = [0.02 0.02];
-% ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
-% 
-% figure;
-% plot(Delta_x_spatial,R_st)
-% title('Spatial')
-% ax = gca; % current axes
-% ax.FontSize = 12;
-% ax.TickDir = 'out';
-% ax.TickLength = [0.02 0.02];
-% ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
+figure;
+plot(dx_on_delta_fft,cc_fft)
+title('FFT')
+ax = gca; % current axes
+ax.FontSize = 12;
+ax.TickDir = 'out';
+ax.TickLength = [0.02 0.02];
+ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
+
+figure;
+plot(dx_on_delta_spat,R_lh)
+title('Spatial')
+ax = gca; % current axes
+ax.FontSize = 12;
+ax.TickDir = 'out';
+ax.TickLength = [0.02 0.02];
+ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
 
 
 
@@ -182,11 +187,13 @@ Data_Loader;
 data_size=size(hw_matrix);
 N=data_size(1);
 n_fft_loop=[-N:1:N-1];
-
+%initialise data
 fft_corr_matrix=zeros(data_size(1)*2,data_size(2));
+dx_on_delta_loop=zeros(length(n_fft_loop),data_size(2));
+
 for jj=1:data_size(2)
-template=hf_matrix(:,jj);
-search_r=hw_matrix(:,jj);
+template=hw_matrix(:,jj);
+search_r=hf_matrix(:,jj);
     %Mean subtract
 template_ms=template-mean(template);
 search_r_ms=search_r-mean(search_r);
@@ -195,17 +202,55 @@ template_ms_std=template_ms/std(template_ms);
 search_r_ms_std=search_r_ms/std(search_r_ms);
 %zero pad
 temp_zp2 = [zeros(size(template_ms));template_ms_std];
-sear_zp2 = [zeros(size(search_r_ms));template_ms_std];
+sear_zp2 = [zeros(size(search_r_ms));search_r_ms_std];
     
 %calculate cross corr
 cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2)));
 %determine actual lag variable
 fft_corr_matrix(:,jj)=cc_fft';
+
+Delta_x_loop = -n_fft_loop.*dt.*mean(hw_matrix(:,jj))   ;   %Mean of hotwire
+dx_on_delta_loop(:,jj) =Delta_x_loop/delta;
 end
 fft_corr_matrix=fft_corr_matrix';
 
 %% Convert to required x-axis
 
+% 
+pcolor(dx_on_delta_loop',data_y/delta, fft_corr_matrix); shading interp
+
+set(gca,'FontSize',16)
+colorbar
+colormap(jet(20))
+caxis([0 max(max(fft_corr_matrix))])
+xlim([-3 3])
+ylim([0 max(data_y/delta)])
+
+
+%%
+figure;
+contour(dx_on_delta_loop',data_y/delta, fft_corr_matrix,10)
+xlim([-3 3])
+ylim([0 max(data_y/delta)])
+
+
+% 
+% % First make the pcolor plot:
+% hSurf=pcolor(dx_on_delta_loop', data_y/delta, fft_corr_matrix); % This is the command to make a shaded contour plot
+% shading interp;
+% hSurfAx=(gca);
+% cRange= caxis; % get the default color map for the data range
+% 
+% % do other cosmetic stuff here, titles, axes, select colors (colormap(hSurfAx, 'summer')), etc, etc.
+% num_lines=7;
+% 
+% % Then add contour lines with appropriate Z data (I am overlaying temperature on other parameters):
+%  [C hT]= contour(dx_on_delta_loop' , data_y/delta, fft_corr_matrix, num_lines, '-k');
+%     hLines=findobj(gca, 'type', 'line'); % find all the separate lines on contour plot.
+%     set(hLines, 'LineWidth', 1); % and set their width.
+% 
+% % Then reset the color axis according to the range determined above:
+% caxis(cRange);
 
 
 % Delta_x_fft = -lag_fft.*dt.*mean(search_r)   ;   %

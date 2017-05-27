@@ -38,8 +38,6 @@ DUp  = 0        ; % Delta U+
 kap  = 0.41     ; % Kappa, von karman constant
 nu   = 8.97e-7  ; % Kinematic viscoity (m^2 . s^-1)
 
-
-
 dplus_E = logspace(1e2,1e6,1e3);
 
 dtheta_smooth    = simplify(subs(dzplus))

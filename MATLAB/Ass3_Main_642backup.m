@@ -7,8 +7,8 @@
 %% Import Data
 clc, clear, close all
 
-Data_Loader;
-hf_Y3=hf_matrix(:,3)
+fid = fopen('MATLAB/Data/u_hf_ypos3.bin', 'r');
+hf_Y3 = fread(fid, '*float') ;
 
 fid_y = fopen('MATLAB/Data/y.txt','r');
 data_y = fscanf(fid_y, '%f')/1000;
@@ -45,11 +45,6 @@ u_lpf = N.*real(ifft(Glpf))            ; % re-construct the fourier signal
 
 figure ; plot(hf_Y3) ; hold on ; plot(u_lpf) ; axis([0,1e3,0,3e-3]) ;
 title('High pass filtered data')
-
-% fitfns = figure ; figure_format() ;
-% hold on ; plot(u_pr,V_pr) ; plot(u_po,V_po) ;
-% legend('Pre-experiment calibration','Post-experiment calibration')
-% title('Fitted calibration fns')
 
 %% High pass filter
 
@@ -156,11 +151,11 @@ dx_on_delta_spat =Delta_x_spatial/delta;
 
 %% Plot Cross Corrs
 
-% figure;
-% hold on
-% plot(search_r,'r-*')
-% % plot(template,'p-')
-% % legend('sr','template')
+figure;
+hold on
+plot(search_r,'r-*')
+% plot(template,'p-')
+legend('sr','template')
 
 figure;
 plot(dx_on_delta_fft,cc_fft)

@@ -228,30 +228,12 @@ ylim([0 max(data_y/delta)])
 
 
 %%
-figure;
-contour(dx_on_delta_loop',data_y/delta, fft_corr_matrix,10)
-xlim([-3 3])
-ylim([0 max(data_y/delta)])
-
-
-% 
-% % First make the pcolor plot:
-% hSurf=pcolor(dx_on_delta_loop', data_y/delta, fft_corr_matrix); % This is the command to make a shaded contour plot
-% shading interp;
-% hSurfAx=(gca);
-% cRange= caxis; % get the default color map for the data range
-% 
-% % do other cosmetic stuff here, titles, axes, select colors (colormap(hSurfAx, 'summer')), etc, etc.
-% num_lines=7;
-% 
-% % Then add contour lines with appropriate Z data (I am overlaying temperature on other parameters):
-%  [C hT]= contour(dx_on_delta_loop' , data_y/delta, fft_corr_matrix, num_lines, '-k');
-%     hLines=findobj(gca, 'type', 'line'); % find all the separate lines on contour plot.
-%     set(hLines, 'LineWidth', 1); % and set their width.
-% 
-% % Then reset the color axis according to the range determined above:
-% caxis(cRange);
-
-
-% Delta_x_fft = -lag_fft.*dt.*mean(search_r)   ;   %
+% figure;
+% for ll=1:data_size(2)
+% contour(dx_on_delta_loop',data_y/delta, fft_corr_matrix,10)
+% xlim([-3 3])
+% ylim([0 max(data_y/delta)])
+% CONTOUR WORKS APPROX:
+      %contour(dx_on_delta_loop(:,1)',data_y/delta, fft_corr_matrix,10)
+%this contour doesn't have the right values for x/delta
 

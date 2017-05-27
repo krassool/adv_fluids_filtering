@@ -103,7 +103,8 @@ template = hw_Y3(1:clip) ;  % Search region vector
 template_ms=template-mean(template);
 search_r_ms=search_r-mean(search_r);
 
-template_
+template_ms_std=template_ms/std(template_ms)
+search_r_ms_std=search_r_ms/std(search_r_ms)
 
 %pad vectors
 temp_zp3 = [zeros(size(template_ms));template_ms;zeros(size(template_ms))];

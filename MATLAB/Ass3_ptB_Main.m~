@@ -1,0 +1,35 @@
+% William Page (587000) - Kevin Rassool (540733)   ;
+% Semester 2 2017 - University of Melbourne        ; Started:     15/5/17
+% MCEN90018 - Advanced Fluid Dynamics              ; Last Edited: 28/5/17
+% Assignment 3
+%
+% Main Script
+%% Set-up
+clc, clear, close all
+format shortE
+
+%% 
+knots_2_mps = 463/900 ; % Conversion between knots and m/s
+sub_speed   = 30      ; % Submarine speed
+
+syms y Ut nu A dUp kap PIE delta 
+syms U Uinf uplus
+
+eta = y/delta
+U_ofy = (1/kap)*log(y*Ut/nu) + A - dUp - (eta^3)*(1/(3*kap)) + PIE/(kap) ...
+        * (2*(eta^2)) * (3 - 2*eta) ;
+
+dtheta = (nu/Ut)*(uplus/S - (uplus/S)
+
+% pretty(U_ofy) % Prints out the equation in an easy to see way
+
+% Define smooth wall constants
+A    = 5        ; % Experimental constants
+dUp  = 0        ; % Delta U+
+kap  = 0.41     ; % Kappa, von karman constant
+% nu   = 8.97e-7  ; % Kinematic viscoity (m^2 . s^-1)
+
+U_ofy_smooth     = simplify(subs(U_ofy))
+U_ofy_smooth_vpa = vpa(U_ofy_smooth,4)
+
+pretty(U_ofy_smooth_vpa)

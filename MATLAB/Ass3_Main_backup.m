@@ -132,6 +132,7 @@ for j = 1:lags+1;
     R_st(j) = R;                           % Store correlation coeff
 end
 
+<<<<<<< HEAD
 %determine actual lag variable
 lag_spatial=(1:length(R_st))-floor(length(R_st)/2)-1;
 
@@ -170,3 +171,19 @@ ax.XLim = [min(lag_spatial) max(lag_spatial)];
 
 
 
+=======
+time_xcorr_oldschool = toc
+%% Compute FFT correlation
+
+u_zp= [zeros(size(template)),template];
+v_zp= [zeros(size(sr)),sr];
+
+cc_fft= fftshift(ifft(conj(fft(u_zp)).*fft(v_zp)));
+
+%%WILL, this works but is just offset in terms of padding. The max values
+%%for correlation 
+% 
+% 
+% R_manual=(R_st/length(template))'
+% fft_cross_corr=xcorr(template,sr)
+>>>>>>> 89d7ebcc14e0a450c9767d7227c64480bc4c7b8f

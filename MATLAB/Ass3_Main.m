@@ -118,14 +118,14 @@ for j = 1:lags+1;
     sr_clip    = sr_shifted(1:length(template));   % Clip the sr to template size
 %     A_sym = A_clip - A_clip_mean;                % A tranformed to be symmetric
 
-        sr_clip_mean = mean2(sr_clip);             % Mean of this region
-        sr_sym = sr_clip - sr_clip_mean;           % A tranformed to be symmetric 
-              
-        Rnum  = sum(sum((tem_sym).*(sr_sym))); % First factor for R
-        Rden1 = sum(sum((tem_sym).^2));        % Denominator f1
-        Rden2 = sum(sum((sr_sym).^2));         % Denominator f2
-        R     = (Rnum)/(sqrt(Rden1*Rden2));    % Cross correlation coefficient
-        R_st(j) = R;                           % Store correlation coeff
+    sr_clip_mean = mean2(sr_clip);                % Mean of this region
+    sr_sym = sr_clip - sr_clip_mean;              % A tranformed to be symmetric 
+%               
+%         Rnum  = sum(sum((tem_sym).*(sr_sym))); % First factor for R
+%         Rden1 = sum(sum((tem_sym).^2));        % Denominator f1
+%         Rden2 = sum(sum((sr_sym).^2));         % Denominator f2
+%         R     = (Rnum)/(sqrt(Rden1*Rden2));    % Cross correlation coefficient
+%         R_st(j) = R;                           % Store correlation coeff
 
     Rnum  = sum(sr_clip.*(template));      % First factor for R
     R     = (Rnum);%/(std(sr_clip)*std_d_tem);      % Cross correlation coefficient
@@ -134,7 +134,6 @@ end
 
 time_xcorr_oldschool = toc
 %% Compute FFT correlation
-
 
 u_zp= [zeros(size(template)),template];
 v_zp= [zeros(size(sr)),sr];
@@ -147,8 +146,3 @@ cc_fft= fftshift(ifft(conj(fft(u_zp)).*fft(v_zp)));
 % 
 % R_manual=(R_st/length(template))'
 % fft_cross_corr=xcorr(template,sr)
-
-
-
-
-

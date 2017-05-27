@@ -8,7 +8,7 @@
 clc, clear, close all
 
 Data_Loader;
-hf_Y3=hf_matrix(:,3)
+hf_Y3=hf_matrix(:,3);
 
 fid_y = fopen('MATLAB/Data/y.txt','r');
 data_y = fscanf(fid_y, '%f')/1000;
@@ -18,94 +18,58 @@ data_y = fscanf(fid_y, '%f')/1000;
 Re_tau = 14000 ; % Reynolds shear stress
 n_pos = 40     ; % Number of wall normal position
 Fs = 10e3      ; % Sampling frequency
-
 delta = 0.326  ; % Boundary layer thickness (m)
 
-N = length(hf_Y3) ; % Length of the clipped time series signal
+N_3 = length(hf_Y3) ; % Length of the clipped time series signal
 tf = 30        ; % Experiment time (s)
 dt = 1/Fs      ; % Time interval
-df = 1/(N.*dt) ; % Frequency interval
-n_spat  = 0:1:(N/2) ; % All mode numbers up to nyquist
+df = 1/(N_3.*dt) ; % Frequency interval
+n_spat  = 0:1:(N_3/2) ; % All mode numbers up to nyquist
 f  = n_spat.*df     ; % Frequency vector to match G/A
 
-%% Low pass / High pass filtering
-
-close all ; % Clear any existing figures
-
-% Implement fourier transformation
-Glpf = fft(hf_Y3)./N           ; % Take an FFT of the data, normalise to length
-A = sqrt(4*(Glpf.*conj(Glpf))) ; % Amplitude function
-
-hf_f_lim = 100        ; % Freqeuncies beyond which the hotfilm is not reliable
-cutoff_hf = hf_f_lim  ; % High frequency cut off
-
-[~,n_c_lpf] = min(abs(f-cutoff_hf)) ; % Find frequencies closest to cut-off
-Glpf(n_c_lpf:end-n_c_lpf+2) = 0        ; % Cut off them high frequncies
-u_lpf = N.*real(ifft(Glpf))            ; % re-construct the fourier signal
-
-figure ; plot(hf_Y3) ; hold on ; plot(u_lpf) ; axis([0,1e3,0,3e-3]) ;
-title('High pass filtered data')
-
-% fitfns = figure ; figure_format() ;
-% hold on ; plot(u_pr,V_pr) ; plot(u_po,V_po) ;
-% legend('Pre-experiment calibration','Post-experiment calibration')
-% title('Fitted calibration fns')
+%% Low pass Filter
+%Call LPF function
+u_lpf=Low_Pass_Filter(hf_Y3,100,f);
+%plot results
+lpffig = figure ; 
+hold on ;  plot([1:N_3]*dt,hf_Y3,'g','linewidth',1) ; plot([1:N_3]*dt,u_lpf,'k','linewidth',4); plot([1:N_3]*dt,u_lpf,'linewidth',2,'color',[255 105 180]./256) ; %axis([0,1e3,0,3e-3]) ;
+legend('Pre-filter Data','Filtered Data')
+title('Low pass filtered data')
+xlim([1 2])
+xlabel('t [s]')
+ylabel('u [m/s]')
+figure_format ;
 
 %% High pass filter
+%Call HPF function
+u_hpf=High_Pass_Filter(hf_Y3,5,f);
 
-Ghpf = fft(hf_Y3)./N  ; % Take an FFT of the data, normalise to length
-cutoff_lf   = 5                        ; % Low frequency cut off
-[~,n_c_hpf] = min(abs(f-cutoff_lf))   ; % Find frequencies closest to cut-off
-Ghpf(1:n_c_hpf)         = 0            ; % Cut off them pre nyqist low frequncies
-Ghpf(end-n_c_hpf+2:end) = 0            ; % Cut off them post nyquist low frequncies
-
-u_lpf_hpf = N.*real(ifft(Ghpf))        ; % Re-construct the fourier signal
-
-figure ; plot(hf_Y3) ; hold on ; plot(u_lpf_hpf) ; axis([0,1e3,0,3e-3]) ;
-title('Original and high pass filtered data') ; xlabel('Time axis'); ylabel('');
-
-%% Cross correlation manually
-
-
-
-%%  Plot some information about the signals
-% figure ; plot(up2nyq(2:end),A(up2nyq(2:end))) ; title('Energy Information');
-% ylabel('Fourier Amplitude') ; xlabel('Fourier Mode')
-%
-% figure ; plot(f(2:end),A(up2nyq(2:end))) ; title('Energy Information');
-% ylabel('Fourier Amplitude') ; xlabel('Frequency')
-%
-% axis([0,3*cutof_f,0,6e-5]); % look at up2Hz frequencies
-%
-% f_over = find (f > cutof_f) ; % Indicies where the frequency is unreliable
-% A_sensible = A(1:1:(N/2)+1) ; % Frequencies with real information
-
-% f(f_over) = 0 ;              % Remove the entires where the data wasnt good
-% f_allover = [f_over, max(f_over)+1:1:max(f_over)+1+length(f_over)  ];
-% G_lpf = Glpf() ;
-% A_sensible(f_over) = 0 ;     % Remove the amplitudes where the data wasnt good
-% A(f_over) = 0 ; % Remove the amplitudes where the data wasnt good
-
-% fr = [f,flip(f)]; % Reconstructed frequency signal
-% Ar = [A_sensible;flip(A_sensible)].'; % reconstructed amplitude signal
-
-% u_lpf = real(ifft(G_lpf)) ; % re-construct the signal from the clipped data
-% figure ; plot(u_lpf(1:N/2+1)) % Plot the result
+%plot results
+lpffig = figure ; 
+hold on ;  plot([1:N_3]*dt,hf_Y3,'g','linewidth',1) ; plot([1:N_3]*dt,u_hpf,'k','linewidth',4); plot([1:N_3]*dt,u_hpf,'linewidth',2,'color',[255 105 180]./256) ; %axis([0,1e3,0,3e-3]) ;
+legend('Pre-filter Data','Filtered Data')
+title('High pass filtered data')
+xlim([1 1.4])
+xlabel('t [s]')
+ylabel('u [m/s]')
+figure_format ;
 
 %% Qn3, Cross Correlation
 %%%%MUST USE FILTERED DATA!!!! %%%
 
-fid_hw = fopen('MATLAB/Data/u_hw_ypos3.bin', 'r');
-hw_Y3  = fread(fid_hw, '*float') ;
-clip=1000;
+clip=N_3;
+hw_Y3=hw_matrix(:,3);
 
 %Choose vectors to compare %%WHICH ONE SHOULD BE HW and WHICH SHOULD BE HF?
 search_r = hf_Y3(1:clip) ;  % Template vector
 template = hw_Y3(1:clip) ;  % Search region vector
 
+%Filter the data
+search_r = Low_Pass_Filter(search_r,100,f); %Filter the data
+template = Low_Pass_Filter(template,100,f); %Filter the data
+
 %Plot the two signals
 figure; subplot(2,1,1); plot(template,'-p'); subplot(2,1,2); plot(search_r,'r-*');
-
 
 %Mean subtract
 template_ms=template-mean(template);
@@ -117,29 +81,29 @@ search_r_ms_std=search_r_ms/std(search_r_ms);
 %pad vectors
 temp_zp3 = [zeros(size(template_ms));template_ms_std;zeros(size(template_ms))];
 sear_zp3 = [zeros(size(search_r_ms));search_r_ms_std;zeros(size(search_r_ms))];
-N=length(template);
+N_spat=length(template);
 
 %std deviation of search region
 std_search_r_ms=std(search_r_ms);
 
-%long hand cross corr
-for kk=-N:1:N-1;
-    R_lh(kk+N+1)= sum(sear_zp3(N+1:2*N) .* (temp_zp3([N+1:2*N]+kk)));
-end
-%normalise results
-R_lh=R_lh/N;
-n_spat=[-N:1:N-1];
+% %long hand cross corr
+% for kk=-N_spat:1:N_spat-1;
+%     R_lh(kk+N_spat+1)= sum(sear_zp3(N_spat+1:2*N_spat) .* (temp_zp3([N_spat+1:2*N_spat]+kk)));
+% end
+% %normalise results
+% R_lh=R_lh/N_spat;
+% n_spat=[-N_spat:1:N_spat-1];
 
 
 %% Compute FFT correlation
 temp_zp2 = [zeros(size(template_ms));template_ms_std];
 sear_zp2 = [zeros(size(search_r_ms));search_r_ms_std];
-N=length(template);
+N_fft=length(template);
 
 %calculate cross corr
-cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2))); %
+cc_fft= (1/N_fft)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2))); %
 %n vector
-n_fft=[-N:1:N-1];
+n_fft=[-N_fft:1:N_fft-1];
 
 % figure;
 % plot(n_fft,cc_fft)
@@ -163,23 +127,31 @@ dx_on_delta_spat =Delta_x_spatial/delta;
 % % legend('sr','template')
 
 figure;
-plot(dx_on_delta_fft,cc_fft)
-title('FFT')
+plot(dx_on_delta_fft,cc_fft)    %plot freq
+% plot(dx_on_delta_spat,R_lh)   %plot spatial
 ax = gca; % current axes
 ax.FontSize = 12;
 ax.TickDir = 'out';
 ax.TickLength = [0.02 0.02];
 ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
+figure_format ;
 
-figure;
-plot(dx_on_delta_spat,R_lh)
-title('Spatial')
-ax = gca; % current axes
-ax.FontSize = 12;
-ax.TickDir = 'out';
-ax.TickLength = [0.02 0.02];
-ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
+% legend()
+title('Cross Correlation')
+xlabel('\Delta x/ \delta ')
+ylabel('R')
 
+
+%Plot Spatial
+% figure;
+% title('Spatial')
+% ax = gca; % current axes
+% ax.FontSize = 12;
+% ax.TickDir = 'out';
+% ax.TickLength = [0.02 0.02];
+% ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
+
+return
 
 
 %% Compute FFT correlation at every point.
@@ -210,14 +182,14 @@ cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2)));
 fft_corr_matrix(:,jj)=cc_fft';
 
 Delta_x_loop = -n_fft_loop.*dt.*mean(hw_matrix(:,jj))   ;   %Mean of hotwire
-dx_on_delta_loop(:,jj) =Delta_x_loop/delta;
+dx_loop(:,jj) =Delta_x_loop;
 end
 fft_corr_matrix=fft_corr_matrix';
 
 %% Convert to required x-axis
 
 % 
-pcolor(dx_on_delta_loop',data_y/delta, fft_corr_matrix); shading interp
+pcolor(dx_loop',data_y/delta, fft_corr_matrix); shading interp
 
 set(gca,'FontSize',16)
 colorbar

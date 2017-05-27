@@ -132,9 +132,7 @@ for j = 1:lags+1;
     R_st(j) = R;                           % Store correlation coeff
 end
 
-%determine actual lag variable
 lag_spatial=(1:length(R_st))-floor(length(R_st)/2)-1;
-
 time_xcorr_oldschool = toc
 
 %% Compute FFT correlation
@@ -144,7 +142,7 @@ sr_zp= pad_vector(sr,template)
 
 %calculate cross corr
 cc_fft= fftshift(ifft(conj(fft(temp_zp)).*fft(sr_zp)));
-%determine actual lag variable
+%determine ac
 lag_fft=(1:length(cc_fft))-floor(length(cc_fft)/2)-1;
 
 %% Plot Cross Corrs
@@ -152,20 +150,10 @@ lag_fft=(1:length(cc_fft))-floor(length(cc_fft)/2)-1;
 figure;
 plot(lag_fft,cc_fft)
 title('FFT')
-ax = gca; % current axes
-ax.FontSize = 12;
-ax.TickDir = 'out';
-ax.TickLength = [0.02 0.02];
-ax.XLim = [min(lag_spatial) max(lag_spatial)];
-
 figure;
 plot(lag_spatial,R_st)
 title('Spatial')
-ax = gca; % current axes
-ax.FontSize = 12;
-ax.TickDir = 'out';
-ax.TickLength = [0.02 0.02];
-ax.XLim = [min(lag_spatial) max(lag_spatial)];
+
 
 
 

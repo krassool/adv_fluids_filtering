@@ -25,8 +25,8 @@ N = length(hf_Y3) ; % Length of the clipped time series signal
 tf = 30        ; % Experiment time (s)
 dt = 1/Fs      ; % Time interval
 df = 1/(N.*dt) ; % Frequency interval
-n  = 0:1:(N/2) ; % All mode numbers up to nyquist
-f  = n.*df     ; % Frequency vector to match G/A
+n_spat  = 0:1:(N/2) ; % All mode numbers up to nyquist
+f  = n_spat.*df     ; % Frequency vector to match G/A
 
 %% Low pass / High pass filtering
 
@@ -103,34 +103,34 @@ template = hw_Y3(1:clip) ;  % Search region vector
 template_ms=template-mean(template);
 search_r_ms=search_r-mean(search_r);
 
-template_
+template_ms_std=template_ms/std(template_ms)
+search_r_ms_std=search_r_ms/std(search_r_ms)
 
 %pad vectors
-temp_zp3 = [zeros(size(template_ms));template_ms;zeros(size(template_ms))];
-sear_zp3 = [zeros(size(search_r_ms));search_r_ms;zeros(size(search_r_ms))];
+temp_zp3 = [zeros(size(template_ms));template_ms_std;zeros(size(template_ms))];
+sear_zp3 = [zeros(size(search_r_ms));template_ms_std;zeros(size(search_r_ms))];
 N=length(template);
 
 %std deviation of search region
 std_search_r_ms=std(search_r_ms);
 
 %long hand cross corr
-for n=-N:1:N-1;
-    R_lh(n+N+1)= sum(sear_zp3(N+1:2*N) .* (temp_zp3([N+1:2*N]+n))) *1/(std(temp_zp3([N+1:2*N]+n))*std_search_r_ms);
+for kk=-N:1:N-1;
+    R_lh(kk+N+1)= sum(sear_zp3(N+1:2*N) .* (temp_zp3([N+1:2*N]+kk)));
 end
 %normalise results
 R_lh=R_lh/N;
 
 %plot results
 figure;
-n=[-N:1:N-1]
-plot(n,R_lh)
-
+n_spat=[-N:1:N-1]
+plot(n_spat,R_lh)
+title('sptail')
 
 %% Compute FFT correlation
-temp_zp2 = [zeros(size(template_ms));template_ms];
-sear_zp2 = [zeros(size(search_r_ms));search_r_ms];
+temp_zp2 = [zeros(size(template_ms));template_ms_std];
+sear_zp2 = [zeros(size(search_r_ms));template_ms_std];
 N=length(template);
-
 
 %calculate cross corr
 cc_fft= (1/N)*(1/std(search_r)*std(template))*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2)));
@@ -138,8 +138,6 @@ cc_fft= (1/N)*(1/std(search_r)*std(template))*fftshift(ifft(conj(fft(sear_zp2)).
 % lag_fft=(1:length(cc_fft))-floor(length(cc_fft)/2)-1;
 n_fft=[-N:1:N-1]
 
-length(cc_fft)
-length(n_fft)
 figure;
 plot(n_fft,cc_fft)
 length(cc_fft)
@@ -148,9 +146,8 @@ length(n_fft)
 return
 %% Convert to required x-axis
 
-Delta_x_fft = -lag_fft.*dt.*mean(search_r)   ;   %
+Delta_x_fft = -n.*dt.*mean(search_r)   ;   %
 Delta_x_spatial = -lag_spatial.*dt.*mean(search_r)   ;   %
-
 
 %% Plot Cross Corrs
 

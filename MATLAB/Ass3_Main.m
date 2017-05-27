@@ -8,7 +8,7 @@
 clc, clear, close all
 
 fid = fopen('MATLAB/Data/u_hf_ypos3.bin', 'r');
-hf_Y3 = fread(fid, '*double') ;
+hf_Y3 = fread(fid, '*float') ;
 
 fid_y = fopen('MATLAB/Data/y.txt','r');
 data_y = fscanf(fid_y, '%f');
@@ -92,19 +92,19 @@ title('Original and high pass filtered data') ; xlabel('Time axis'); ylabel('');
 %%%%MUST USE FILTERED DATA!!!! %%%
 
 fid_hw = fopen('MATLAB/Data/u_hw_ypos3.bin', 'r');
-hw_Y3  = fread(fid_hw, '*double') ;
+hw_Y3  = fread(fid_hw, '*float') ;
 clip=50;
 
 %Choose vectors to compare %%WHICH ONE SHOULD BE HW and WHICH SHOULD BE HF?
 search_r = hw_Y3(1:clip) ;  % Template vector
-template = hw_Y3(1:clip) ;  % Search region vector
+template = hf_Y3(1:clip) ;  % Search region vector
 
 %Mean subtract
 template_ms=template-mean(template);
 search_r_ms=search_r-mean(search_r);
-
-template_ms_std=template_ms/std(template_ms)
-search_r_ms_std=search_r_ms/std(search_r_ms)
+%std deviation normalisation
+template_ms_std=template_ms/std(template_ms);
+search_r_ms_std=search_r_ms/std(search_r_ms);
 
 %pad vectors
 temp_zp3 = [zeros(size(template_ms));template_ms_std;zeros(size(template_ms))];
@@ -123,35 +123,30 @@ R_lh=R_lh/N;
 
 %plot results
 figure;
-n_spat=[-N:1:N-1]
+n_spat=[-N:1:N-1];
 plot(n_spat,R_lh)
 title('sptail')
-
 
 %% Compute FFT correlation
 temp_zp2 = [zeros(size(template_ms));template_ms_std];
 sear_zp2 = [zeros(size(search_r_ms));template_ms_std];
 N=length(template);
 
-
 %calculate cross corr
-cc_fft= (1/N)*(1/std(search_r)*std(template))*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2)));
-%determine actual lag variable
-% lag_fft=(1:length(cc_fft))-floor(length(cc_fft)/2)-1;
-n_fft=[-N:1:N-1]
+cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2))); %
+%n vector
+n_fft=[-N:1:N-1];
 
-length(cc_fft)
-length(n_fft)
 figure;
 plot(n_fft,cc_fft)
 length(cc_fft)
 length(n_fft)
 
-return
 %% Convert to required x-axis
 
-Delta_x_fft = -lag_fft.*dt.*mean(search_r)   ;   %
-Delta_x_spatial = -lag_spatial.*dt.*mean(search_r)   ;   %
+Delta_x_fft = -n_fft.*dt.*mean(search_r)   ;   %Mean of hotwire
+dx_on_delta=Delta_x_fft/delta;
+% Delta_x_spatial = -lag_spatial.*dt.*mean(search_r)   ;   %
 
 %% Plot Cross Corrs
 
@@ -161,42 +156,53 @@ plot(search_r,'r-*')
 % plot(template,'p-')
 legend('sr','template')
 
-figure;
-plot(Delta_x_fft,cc_fft)
-title('FFT')
-ax = gca; % current axes
-ax.FontSize = 12;
-ax.TickDir = 'out';
-ax.TickLength = [0.02 0.02];
-ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
-
-figure;
-plot(Delta_x_spatial,R_st)
-title('Spatial')
-ax = gca; % current axes
-ax.FontSize = 12;
-ax.TickDir = 'out';
-ax.TickLength = [0.02 0.02];
-ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
-
-
-
-% %% Compute FFT correlation at every point.
-% %Load all data in
-% Data_Loader;
-% data_size=size(hw_matrix)
+% figure;
+% plot(Delta_x_fft,cc_fft)
+% title('FFT')
+% ax = gca; % current axes
+% ax.FontSize = 12;
+% ax.TickDir = 'out';
+% ax.TickLength = [0.02 0.02];
+% ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
 % 
-% 
-% for kk=1:data_size(2)
-%     temp_zp= pad_vector(search_r,template)
-%     sr_zp= pad_vector(template,search_r)
-%     
-%     %calculate cross corr
-%     cc_fft= fftshift(ifft(conj(fft(sr_zp)).*fft(temp_zp)));
-%     %determine actual lag variable
-%     lag_fft=(1:length(cc_fft))-floor(length(cc_fft)/2)-1;
-% end
+% figure;
+% plot(Delta_x_spatial,R_st)
+% title('Spatial')
+% ax = gca; % current axes
+% ax.FontSize = 12;
+% ax.TickDir = 'out';
+% ax.TickLength = [0.02 0.02];
+% ax.XLim = [min(Delta_x_spatial) max(Delta_x_spatial)];
 
+
+
+%% Compute FFT correlation at every point.
+%Load all data in
+Data_Loader;
+data_size=size(hw_matrix);
+N=data_size(1);
+n_fft_loop=[-N:1:N-1];
+
+fft_corr_matrix=zeros(data_size(1)*2,data_size(2));
+for jj=1:data_size(2)
+template=hf_matrix(:,jj);
+search_r=hw_matrix(:,jj);
+    %Mean subtract
+template_ms=template-mean(template);
+search_r_ms=search_r-mean(search_r);
+%std deviation normalisation
+template_ms_std=template_ms/std(template_ms);
+search_r_ms_std=search_r_ms/std(search_r_ms);
+%zero pad
+temp_zp2 = [zeros(size(template_ms));template_ms_std];
+sear_zp2 = [zeros(size(search_r_ms));template_ms_std];
+    
+%calculate cross corr
+cc_fft= (1/N)*fftshift(ifft(conj(fft(sear_zp2)).*fft(temp_zp2)));
+%determine actual lag variable
+fft_corr_matrix(:,jj)=cc_fft';
+end
+fft_corr_matrix=fft_corr_matrix';
 
 %% Convert to required x-axis
 

@@ -202,10 +202,8 @@ PSD_ensemble_1sig = PSD_ensemble_1sig/n_sections;
 f_sel = f_sel.';
 
 figure ; semilogx(f_sel,f_sel.*PSD_ensemble_1sig)
-title('Second stage of averaging/convergance')
-xlabel('Frequency (Hz)')
-ylabel('f \Phi')
-figure_format(1)
+title('Second stage of averaging/converging')
+xlabel('')
 
 % ENSEMBLE AVERAGE THEM FOR EVERY SIGNAL
 n_sigs = 10;
@@ -246,10 +244,6 @@ PSD_ensemble_allsigs = PSD_ensemble_allsigs./(n_sigs*n_sections);
 pm_psd = f_sel.*PSD_ensemble_allsigs;
 figure ; semilogx(f_sel,pm_psd)
 title('Final stage of averaging/converging')
-xlabel('Frequency (Hz)')
-ylabel('f \Phi')
-figure_format(1)
-
 
 f_sel_CF = log(f_sel);
 [xData, yData] = prepareCurveData( f_sel_CF, pm_psd );

@@ -97,10 +97,10 @@ zero_if_same = A_spectral - variance   % Check if signals same
 % Do the plots
 
 figure ; semilogx(f,f.*phi) ; 
-title('Pre-multiplied energy plot (to make meaningful again)')
+title('Spectral Power Density Plot')
 xlabel('frequency - f (Hz)')
 ylabel('Freqency \times Power Spectral Density - f \phi')
-figure_format(1)
+% figure_format(1)
 %% HEAD CHECKS TO CHECK MATHS IS STILL MATHS
 
 % HEAD CHECK 1 -> PARSEVALS THEORY HOLDS
@@ -134,7 +134,8 @@ for t_clip = [1 5 30]
     wire_bst_clip = wire_bst(1:t_clip*Fs) ;
     N_clip        = length(wire_bst_clip) ;       
     df_clip       = 1/(N_clip.*dt)  ; % Frequency interval for clipped signal
-    f_clip        = n_spat.*df_clip ; % Frequency vector to match clipped 'g'
+    n_spat_clip   = 0:N_clip/2;
+    f_clip        = n_spat_clip.*df_clip ; % Frequency vector to match clipped 'g'
    
     % Implement sprectal analysis
     msub_clip    = wire_bst_clip-mean(wire_bst_clip);
@@ -143,29 +144,96 @@ for t_clip = [1 5 30]
     phi_clip      = 2.*fft_bst_clip.*conj(fft_bst_clip)./df_clip ; % Define power spectral density
     phi_clip      = phi_clip.';                      % Transpose phi for pre-multiplication
     
+    size(f_clip)
+    size(phi_clip)
     % Figure 
     figure; semilogx(f_clip,f_clip.*phi_clip)
     figure_format(2);
 end
 
-%% ENSEBLE AVERAGE THEM FOR THE FIRST SIGNAL
+%% ENSEBLE AVERAGE POWER SIGNALS
+
+close all
+
+figure ; semilogx(f,f.*phi) ; 
 
 t_selected     = 5 ;
 n_sections     = tf/t_selected  ;
-N_sel          = Fs.*t_selected ;       
-df_sel         = 1/(N_sel.*dt)  ; % Frequency interval for clipped signal
-f_sel          = n_spat.*df_sel ;  % Frequency vector to match clipped 'g'
-
 hw_bst_clipmat = zeros(length(burst_hw_matrix)/n_sections,n_sections) ;
 t1_wire_bst    = burst_hw_matrix(:,1) ;
+
+% For each row, calcuate the PSD and add it to an average
+N_sel          = Fs.*t_selected ; % Number of entries in time series
+df_sel         = 1/(N_sel.*dt)  ; % Frequency interval
+n_spat_sel     = 0:N_sel/2;
+f_sel          = n_spat_sel.*df_sel ; % Frequency vector to match clipped 'g'
+
+PSD_ensemble_1sig   = zeros(N_sel/2+1,1)   ; % Preallocate array
 
 % Make into a matrix
 for loopvar1 = 1 : n_sections
     st_var  = N*(loopvar1-1)/n_sections+1;
     end_var = loopvar1*N/n_sections;
     hw_bst_clipmat(:,loopvar1) = t1_wire_bst(st_var:end_var);
-    
 end
 
+% Loop through all the clipped indicies and average them
+for lv2 = 1:size(hw_bst_clipmat,2)
+    tmp_wire = hw_bst_clipmat(:,lv2)        ; % Assign the col we're lookin at
+    msub_tmp = tmp_wire - mean(tmp_wire)    ; % Mean subtract the signal
+    
+    fft_bst_tmp = fft(msub_tmp)./N_sel      ; % Take an FFT of the data, normalise to length
+    fft_bst_tmp = fft_bst_tmp(1:N_sel/2+1)  ; % Clip off the post nyquist bs
+    
+    phi_tmp    = 2.*fft_bst_tmp.*conj(fft_bst_tmp)./df_sel ; % Define power spectral density
+    
+    PSD_ensemble_1sig = PSD_ensemble_1sig+phi_tmp;
+end
+
+PSD_ensemble_1sig = PSD_ensemble_1sig/n_sections;
+f_sel = f_sel.';
+
+figure ; semilogx(f_sel,f_sel.*PSD_ensemble_1sig)
+title('Second stage of averaging/converging')
 
 % ENSEMBLE AVERAGE THEM FOR EVERY SIGNAL
+n_sigs = 10;
+PSD_ensemble_allsigs = zeros(N_sel/2+1,1);
+
+for sig = 1:n_sigs
+    
+    tmp_wire_bst = burst_hw_matrix(:,sig) ;
+    
+    % Pre-allocate temp variable to store 5s clips in the columns
+    hw_bst_clipmat_tmp = zeros(length(burst_hw_matrix)/n_sections,n_sections) ;
+    
+    % Make a matrix, with each clipped bit in the columns
+    % COULD MAKE THIS MUCH MORE ELEGANT USING RESHAPE
+    
+    for lv_clip1 = 1 : n_sections
+        st_var  = N*(lv_clip1-1)/n_sections+1;
+        end_var = lv_clip1*N/n_sections;
+        hw_bst_clipmat_tmp(:,lv_clip1) = tmp_wire_bst(st_var:end_var);
+        
+    end
+    
+    % Loop through all the clipped indicies and average them
+    for lv_col = 1:size(hw_bst_clipmat_tmp,2)
+        tmp_wire = hw_bst_clipmat_tmp(:,lv_col)  ; % Assign the col we're lookin at
+        msub_tmp = tmp_wire - mean(tmp_wire)    ; % Mean subtract the signal
+
+        fft_bst_tmp = fft(msub_tmp)./N_sel      ; % Take an FFT of the data, normalise to length
+        fft_bst_tmp = fft_bst_tmp(1:N_sel/2+1)  ; % Clip off the post nyquist bs
+
+        phi_tmp    = 2.*fft_bst_tmp.*conj(fft_bst_tmp)./df_sel ; % Define power spectral density
+
+        PSD_ensemble_allsigs = PSD_ensemble_allsigs + phi_tmp ;
+    end
+end
+
+PSD_ensemble_allsigs = PSD_ensemble_allsigs./(n_sigs*n_sections);
+pm_psd = f_sel.*PSD_ensemble_allsigs;
+figure ; semilogx(f_sel,pm_psd)
+title('Final stage of averaging/converging')
+
+f_sel_CF = log(f_sel);

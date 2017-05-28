@@ -52,7 +52,7 @@ condition     = 0   ;
 gradient_fn   = wire20_lpf(2:end) - wire20_lpf(1:end-1) ;
 cond_indicies = find(gradient_fn>condition) ;
 
-virtual_pad   = 1e2 ;
+virtual_pad   = 480 ;
 cond_average  = 0   ;
 
 cond_indicies( cond_indicies < virtual_pad ) = [];
@@ -96,8 +96,8 @@ zero_if_same = A_spectral - variance   % Check if signals same
 
 % Do the plots
 
-figure ; semilogx(f,f.*phi) ;
-    title('Pre-multiplied Power Spectral Density Plot ')
+figure ; semilogx(f,f.*phi) ; 
+title('Spectral Power Density Plot')
 xlabel('frequency - f (Hz)')
 ylabel('Freqency \times Power Spectral Density - f \phi')
 % figure_format(1)
@@ -238,3 +238,15 @@ figure ; semilogx(f_sel,pm_psd)
 title('Final stage of averaging/converging')
 
 f_sel_CF = log(f_sel);
+[xData, yData] = prepareCurveData( f_sel_CF, pm_psd );
+ft = fittype( 'poly9' );% Set up fittype and options.
+[fitresult, gof] = fit( xData, yData, ft );% Fit model to data.
+
+% Plot fit with data
+xrange = linspace(-0.6931,9.2103,1e3);
+y_new = fitresult(xrange );
+figure ; h = semilogx(exp(xData),yData,'b.') ; hold on ;
+semilogx(exp(xrange),y_new)
+xlabel('Frequency') ; ylabel('Pre-Multiplied PSD') ; grid on
+legend('Spectral Density Scatter','Approximate energy function')
+figure_format(1);

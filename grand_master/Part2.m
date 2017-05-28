@@ -74,7 +74,7 @@ ylabel('C_f');
 xlabel('Re_{x}');
 legend('Smooth wall');
 
-return
+
 
 %% Rough Wall
 % Get logarithmic spacing of d_plus

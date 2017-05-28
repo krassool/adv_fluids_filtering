@@ -26,6 +26,11 @@ dplus_E = logspace(log10(1e2) , log10(1e6), 1e3);
 Re_theta = zeros(size(dplus_E));
 Cf       = zeros(size(dplus_E));
 
+%Rough variables
+U_tau_r    = zeros(size(dplus_E));
+ks=325*1e-6; %[m]
+
+
 for i = 1:length(dplus_E)
     
     z_plus = logspace(-4,log10(dplus_E(i)),n_point);

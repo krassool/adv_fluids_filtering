@@ -23,61 +23,84 @@ PI   = 0.55     ; % For ZPG turbulant boundary layer
 %create log-space
 dplus_E = logspace(log10(1e2) , log10(1e6), 1e3);
 %initilaise vectors
-Re_theta = zeros(size(dplus_E));
-Cf       = zeros(size(dplus_E));
+Re_theta_rough= zeros(size(dplus_E));
+Cf_rough       = zeros(size(dplus_E));
 
 %Rough variables
-U_tau_r    = zeros(size(dplus_E));
+U_tau_rough    = zeros(size(dplus_E));
 ks=325*1e-6; %[m]
 
+%fsolve set up
+fsolve_opt=optimset('Display', 'off')
 
-for i = 1:length(dplus_E)
+for jj = 1:length(dplus_E)
     
-    z_plus = logspace(-4,log10(dplus_E(i)),n_point);
+    %this function solves for U_tau for each unique value of delta
+        Function = @(U_tau) (1/kap)*log(dplus_E(jj)) - (1/(3*kap))+(2*PI/kap) ...
+        - (1/kap)*log(ks*U_tau/nu) + 8.5 - U_sub/U_tau;
     
-    eta = z_plus./dplus_E(i);
+    
+    %input first guess value in to function
+    init_val = 0.1;
+    
+    %Take the next inital value as the result from previous Utau function
+    if jj ~= 1
+        init_val = U_tau_rough(jj-1);
+    end
+    % Call fucntion and solve for U tau
+    U_tau_rough(jj) = fsolve(Function, init_val, fsolve_opt);
+    
+    
+    %define z_plus
+    z_plus = logspace(-4,log10(dplus_E(jj)),n_point);
+    
+    eta = z_plus./dplus_E(jj);
 
+    %calculate ks plus from U_tau value
+    ks_plus= ks*U_tau_rough(jj)/nu;
     %U plus
-    u_plus = (1/kap).*log(z_plus)+A-(1/(3*kap)).*eta.^3 + ...
-        (PI/kap).*2.*(eta.^2).*(3-2.*eta);
+    u_plus = (1/kap) .*log(z_plus) - (1/kap) .*log(ks_plus) + 8.5 ...
+        -(1/(3*kap)) .*eta.^3 + (PI/kap) .* 2 .* (eta.^2) .* (3-2.*eta);
     %S 
-    S = (1/kap).*log(dplus_E(i))+A-(1/(3*kap))+(2*PI/kap);
-    % Numerically integrate to get Re_theta
-    inetgrand = (u_plus - (u_plus.^2)./S);
-    Re_theta(i) = trapz(z_plus,inetgrand);
+    S = (1/kap).*log(dplus_E(jj))-(1/kap).*log(ks_plus)+8.5-(1/(3*kap))+(2*PI/kap);
+        % Numerically integrate to get Re_theta
+    integrand = (u_plus - (u_plus.^2)./S);
+    Re_theta_rough(jj) = trapz(z_plus,integrand);
     % Calculate Cf
-    Cf(i) = 2./(S.^2);
+    Cf_rough(jj) = 2./(S.^2);
 end
 
 figure;
-loglog(dplus_E,Re_theta)
-title('\delta^+ vs Re_{\theta} for a Smooth Wall')
+loglog(dplus_E,Re_theta_rough)
+title('\delta^+ vs Re_{\theta} for a Rough Wall')
 ylabel('Re_{\theta}');
 xlabel('\delta^+');
 figure_format(1) ;
 
 
 figure;
-semilogx(dplus_E,Cf)
-title('\delta^+ vs C_f for a Smooth Wall')
+semilogx(dplus_E,Cf_rough)
+title('\delta^+ vs C_f for a Rough Wall')
 ylabel('C_f');
 xlabel('\delta^+');
 figure_format(1) ;
 
+
+
 %% Qn 3, Rex calculation @ x=115m
 
 % Calculate Re_x at every point 
-Re_x = cumtrapz(Re_theta, 2./Cf);
+Re_x = cumtrapz(Re_theta_rough, 2./Cf_rough);
 
 % Determine C_f and delta for x = 115 m
 x = 115                 ;     %m
 Re_x_115 = x*U_sub/nu   ;
-Cf_115 = interp1q(Re_x', Cf', Re_x_115)  ;
+Cf_115 = interp1q(Re_x', Cf_rough', Re_x_115)  ;
 delta_plus_115 = exp(sqrt(2/Cf_115)*kap - A*kap + 1/3 - 2*PI);
 delta_115 = delta_plus_115*nu*sqrt(2/Cf_115)/U_sub
 
 figure;
-semilogx(Re_x,Cf)
+semilogx(Re_x,Cf_rough)
 title('Re_x vs C_f for a Smooth Wall')
 hold on
 ylabel('C_f');

@@ -29,44 +29,51 @@ wire20 = hw_matrix(:,20) ;
 film20 = hf_matrix(:,20) ;
 
 % Implement fourier transformation
-Glpf = fft(film20)./N           ; % Take an FFT of the data, normalise to length
-A = sqrt(4*(Glpf.*conj(Glpf))) ; % Amplitude function
+lpf_film = fft(film20)./N           ; % Take an FFT of the data, normalise to length
+lpf_wire = fft(wire20)./N           ; % Take an FFT of the data, normalise to length
 
 hf_f_lim = 100        ; % Freqeuncies beyond which the hotfilm is not reliable
 cutoff_hf = hf_f_lim  ; % High frequency cut off
 
 [~,n_c_lpf] = min(abs(f-cutoff_hf)) ; % Find frequencies closest to cut-off
-Glpf(n_c_lpf:end-n_c_lpf+2) = 0     ; % Cut off them high frequncies
-wire20_lpf = N.*real(ifft(Glpf))    ; % Re-construct the fourier signal
 
-figure ; plot(film20) ; hold on ; plot(wire20_lpf) ;
+lpf_film(n_c_lpf:end-n_c_lpf+2) = 0     ; % Cut off them high frequncies
+lpf_wire(n_c_lpf:end-n_c_lpf+2) = 0     ; % Cut off them high frequncies
+
+film20_lpf = N.*real(ifft(lpf_film))    ; % Re-construct the signal
+wire20_lpf = N.*real(ifft(lpf_wire))    ; % Re-construct the signal
+
+figure ; plot(film20) ; hold on ; plot(film20_lpf) ;
 title('Comparison of original and high pass filtered data')
 
 %% Conditional averaging
 
-close all
+close all % Close any open figures
 
-figure ; plot(wire20_lpf) ; title('Filtered input signal')
+figure ; plot(film20_lpf) ; title('Filtered input signal') ; % Plot input
 
-condition     = 0   ;
-gradient_fn   = wire20_lpf(2:end) - wire20_lpf(1:end-1) ;
-cond_indicies = find(gradient_fn>condition) ;
+condition     = 0   ; % Condition on which the signal is averaged
+gradient_fn   = film20_lpf(2:end) - film20_lpf(1:end-1) ; % Discrete Gradient
+cond_indicies = find(gradient_fn>condition) ; % Indicies where conditions met
 
-virtual_pad   = 1e2 ;
-cond_average  = 0   ;
+virtual_pad   = 480 ; % Length to look in either direction
+cond_average  = 0   ; % Condition on which the signal is averaged
 
-cond_indicies( cond_indicies < virtual_pad ) = [];
+% Remove indicies less than 0 of more than the length of the array
+cond_indicies( cond_indicies < virtual_pad ) = [] ; 
 cond_indicies( cond_indicies > length(cond_indicies)- virtual_pad ) = [] ;
 
+% Add to the ensemble average where the conditions are met
 for i = 1:length(cond_indicies)
     idx = cond_indicies(i);
-    cond_average = cond_average+wire20(idx-virtual_pad:idx+virtual_pad);
+    cond_average = cond_average+wire20_lpf(idx-virtual_pad:idx+virtual_pad);
 end
+cond_average = cond_average./length(cond_indicies); % Normalise to correct magnitude
 
-cond_average = cond_average./length(cond_indicies);
-figure ; plot(cond_average) ;
-title('Conditionally averaged plot')
-
+% Create a plot
+xplotx = linspace(-virtual_pad,virtual_pad,2*virtual_pad+1);
+figure ; plot(xplotx,cond_average) ; xlabel('\Delta t (s)'); ylabel('Average velocity (m/s)');
+title('Hotwire signal, conditionally averaged for positive hotfilm gradients')  ;
 %%  Spectral Power Density
 close all
 
@@ -95,13 +102,8 @@ zero_if_same = A_spectral - variance   % Check if signals same
 
 % Do the plots
 
-<<<<<<< HEAD
-figure ; semilogx(f,f.*phi) ;
-    title('Pre-multiplied Power Spectral Density Plot ')
-=======
 figure ; semilogx(f,f.*phi) ; 
 title('Spectral Power Density Plot')
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
 xlabel('frequency - f (Hz)')
 ylabel('Freqency \times Power Spectral Density - f \phi')
 % figure_format(1)
@@ -138,15 +140,9 @@ for t_clip = [1 5 30]
     wire_bst_clip = wire_bst(1:t_clip*Fs) ;
     N_clip        = length(wire_bst_clip) ;
     df_clip       = 1/(N_clip.*dt)  ; % Frequency interval for clipped signal
-<<<<<<< HEAD
     n_spat_clip   = 0:(N_clip/2)    ; % All mode numbers up to nyquist
     f_clip        = n_spat_clip.*df_clip;  % Frequency vector to match clipped 'g'
     
-=======
-    n_spat_clip   = 0:N_clip/2;
-    f_clip        = n_spat_clip.*df_clip ; % Frequency vector to match clipped 'g'
-   
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
     % Implement sprectal analysis
     msub_clip    = wire_bst_clip-mean(wire_bst_clip);
     fft_bst_clip = fft(msub_clip)./N_clip   ; % Take an FFT of the data, normalise to length
@@ -154,13 +150,7 @@ for t_clip = [1 5 30]
     phi_clip      = 2.*fft_bst_clip.*conj(fft_bst_clip)./df_clip ; % Define power spectral density
     phi_clip      = phi_clip.';                      % Transpose phi for pre-multiplication
     
-<<<<<<< HEAD
     % Figure
-=======
-    size(f_clip)
-    size(phi_clip)
-    % Figure 
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
     figure; semilogx(f_clip,f_clip.*phi_clip)
     title('Pre-multiplied Power Spectral Density Plot ')
     xlabel('frequency - f (Hz)')
@@ -211,7 +201,10 @@ PSD_ensemble_1sig = PSD_ensemble_1sig/n_sections;
 f_sel = f_sel.';
 
 figure ; semilogx(f_sel,f_sel.*PSD_ensemble_1sig)
-title('Second stage of averaging/converging')
+title('Second stage of averaging/convergance')
+xlabel('Frequency (Hz)')
+ylabel('f \Phi')
+figure_format(1)
 
 % ENSEMBLE AVERAGE THEM FOR EVERY SIGNAL
 n_sigs = 10;
@@ -252,6 +245,10 @@ PSD_ensemble_allsigs = PSD_ensemble_allsigs./(n_sigs*n_sections);
 pm_psd = f_sel.*PSD_ensemble_allsigs;
 figure ; semilogx(f_sel,pm_psd)
 title('Final stage of averaging/converging')
+xlabel('Frequency (Hz)')
+ylabel('f \Phi')
+figure_format(1)
+
 
 f_sel_CF = log(f_sel);
 [xData, yData] = prepareCurveData( f_sel_CF, pm_psd );

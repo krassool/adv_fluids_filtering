@@ -70,8 +70,7 @@ title('Conditionally averaged plot')
 %%  Spectral Power Density
 close all
 
-% Things that were mostly constant before but now are different constant numbers
-
+% Re-define constants for higher sample rate
 Fs     = 30e3       ; % Sampling frequency
 tf     = 30         ; % Experiment time (s)
 dt     = 1/Fs       ; % Time interval

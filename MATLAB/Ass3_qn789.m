@@ -71,7 +71,8 @@ for i = 1:length(cond_indicies)
 end
 
 cond_average = cond_average./length(cond_indicies);
-figure ; plot(cond_average)
+figure ; plot(cond_average) ; 
+title('Conditionally averaged plot')
 
 %%  Spectral Power Density
 close all
@@ -80,24 +81,39 @@ close all
 
 Fs     = 10e3       ; % Sampling frequency
 delta  = 0.326      ; % Boundary layer thickness (m) 
-N      = length(burst_hw_matrix) ; % Length of the clipped time series signal
 tf     = 3          ; % Experiment time (s)
 dt     = 1/Fs       ; % Time interval
 df     = 1/(N.*dt)  ; % Frequency interval
+N      = Fs*tf      ; % Length of the time serires
 n_spat = 0:1:(N/2)  ; % All mode numbers up to nyquist
 f      = n_spat.*df ; % Frequency vector to match G/A
 
-burst_hw_1 = burst_hw_matrix(:,1);
-fft_wireb = fft(burst_hw_1)./N         ; % Take an FFT of the data, normalise to length
+burst_hw_1 = burst_hw_matrix(:,1) ; % Load the data of the first one into a var
+burst_hw_1_msub = burst_hw_1 - mean(burst_hw_1)  ; % Mean subtract the signal
 
-A   = sqrt(4*(fft_wireb.*conj(fft_wireb))) ; % Amplitude function
-phi = (A.^2) / 2;
+fft_wireb  = fft(burst_hw_1_msub)./N   ; % Take an FFT of the data, normalise to length
 
-figure ; semilogx(f(2:length(f)),A(2:length(f)));
+A   = sqrt(4*(fft_wireb_msub.*conj(fft_wireb_msub))) ; % Amplitude function
+
+% HEAD CHECK 1 -> PARSEVALS THEORY HOLDS
+A2  = 4.*fft_wireb_msub.*conj(fft_wireb_msub)        ;
+sA2 = sum(A2)/4
+meanu = mean(burst_hw_1_msub.^2)
+
+% HEAD CHECK 2 -> MODIFIED PARSEVALS HOLDS (DOESNT CURRENTLY HOLD!!)
+nnn   = sum(A2(1:N/2+1))/2;
+A2_o2 = A2(1:((N/2)+1));
+sA2_o2 = sum(A2_o2)/2
+meanu2 = mean(burst_hw_1_msub.^2)
+
+% CREATE POEWR SPECTRAL DENSITY FUNCTION
+A2_half = A2(1:N/2+1).'  ;
+phi = (A2_half)./(2*f) ;
+
+figure ; semilogx(f,A2_half);
 title('Amplitude Function on Log Axes');
 
-f = f.';
-figure ; semilogx(f,f.*phi(1:length(f)))
+figure ; semilogx(f,phi);
+title('Energy spectral density');
 
-A_spec = trapz(f,phi(1:length(f)))
-Avar   = (1/N)*trapz()
+A_spec = trapz(f(2:5),phi(2:5))

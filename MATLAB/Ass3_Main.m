@@ -142,6 +142,9 @@ xlabel('\Delta x/ \delta ')
 ylabel('R')
 legend('Frequency Domain Cross Correlation','Spatial Domain Cross Correlation')
 
+
+return
+
 %% Compute FFT correlation at every point.
 %Load all data in
 data_size=size(hw_matrix);

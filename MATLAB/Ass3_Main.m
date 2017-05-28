@@ -180,16 +180,16 @@ fft_corr_matrix=fft_corr_matrix';
 %% Plot resulting matrix to on
 % 
 figure;
-pcolor(dx_loop',data_y/delta, fft_corr_matrix); shading interp
+pcolor(dx_loop',data_y, fft_corr_matrix); shading interp
 
 set(gca,'FontSize',16)
 colorbar
 colormap(jet(20))
 caxis([0 max(max(fft_corr_matrix))])
 xlim([-3 3])
-ylim([0 max(data_y/delta)])
-xlabel('\Delta x')
-ylabel('y/\delta')
+ylim([0 max(data_y)])
+xlabel('\Delta x [m]')
+ylabel('y [m]')
 figure_format(1) ;
 
 

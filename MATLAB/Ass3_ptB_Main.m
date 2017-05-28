@@ -10,6 +10,7 @@ clc, clear, close all
 %% Speed Conversion
 knots_2_mps = 463/900 ; % Conversion between knots and m/s
 sub_speed   = 30      ; % Submarine speed
+U_sub=sub_speed*knots_2_mps;
 
 % number of z points
 n_point=1000;
@@ -48,6 +49,35 @@ loglog(dplus_E,Re_theta)
 title('\delta^+ vs Re_{\theta} for a Smooth Wall')
 ylabel('Re_{\theta}');
 xlabel('\delta^+');
+figure_format(1) ;
+
+
+figure;
+semilogx(dplus_E,Cf)
+title('\delta^+ vs C_f for a Smooth Wall')
+ylabel('C_f');
+xlabel('\delta^+');
+figure_format(1) ;
+
+%% Qn 3, Rex calculation @ x=115m
+
+% Calculate Re_x at every point 
+Re_x = cumtrapz(Re_theta, 2./Cf);
+
+% Determine C_f and delta for x = 115 m
+x = 115                 ;     %m
+Re_x_115 = x*U_sub/nu   ;
+Cf_115 = interp1q(Re_x', Cf', Re_x_115)
+delta_plus_115 = exp(sqrt(2/Cf_115)*kap - A*kap + 1/3 - 2*PI);
+delta_115 = delta_plus_115*nu*sqrt(2/Cf_115)/U_sub
+
+figure;
+semilogx(Re_x,Cf)
+title('Re_x vs C_f for a Smooth Wall')
+hold on
+ylabel('C_f');
+xlabel('Re_x');
+plot(Re_x,Cf_115*ones(length(Re_x)),'--','linewidth',2,'color',[255 105 180]./256);
 figure_format(1) ;
 
 

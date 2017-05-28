@@ -13,7 +13,7 @@ end
 
 
 % Modify the text size and plot size
-set(gca,'FontSize',14,'FontName'   , 'AvantGarde');
+set(gca,'FontSize',16,'FontName'   , 'Geneva');
 set(gcf,'Position',[100 100 1140/den 600])
 
 

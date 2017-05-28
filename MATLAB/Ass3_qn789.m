@@ -237,3 +237,15 @@ figure ; semilogx(f_sel,pm_psd)
 title('Final stage of averaging/converging')
 
 f_sel_CF = log(f_sel);
+[xData, yData] = prepareCurveData( f_sel_CF, pm_psd );
+ft = fittype( 'poly9' );% Set up fittype and options.
+[fitresult, gof] = fit( xData, yData, ft );% Fit model to data.
+
+% Plot fit with data
+xrange = linspace(-0.6931,9.2103,1e3);
+y_new = fitresult(xrange );
+figure ; h = semilogx(exp(xData),yData,'b.') ; hold on ;
+semilogx(exp(xrange),y_new)
+xlabel('Frequency') ; ylabel('Pre-Multiplied PSD') ; grid on
+legend('Spectral Density Scatter','Approximate energy function')
+figure_format(1);

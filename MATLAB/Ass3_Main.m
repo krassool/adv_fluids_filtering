@@ -36,11 +36,12 @@ u_lpf=Low_Pass_Filter(hf_Y3,lpf_cutoff_value,f);
 lpffig = figure ; 
 hold on ;  plot([1:N_3]*dt,hf_Y3,'g','linewidth',1) ; plot([1:N_3]*dt,u_lpf,'k','linewidth',4); plot([1:N_3]*dt,u_lpf,'linewidth',2,'color',[255 105 180]./256) ; %axis([0,1e3,0,3e-3]) ;
 legend('Pre-filter Data','Filtered Data')
-title('Low pass filtered data')
 xlim([1 2])
 xlabel('t [s]')
 ylabel('u [m/s]')
+title('Low pass filtered data')
 figure_format(1) ;
+
 
 %% High pass filter
 %Call HPF function
@@ -69,7 +70,7 @@ template = hw_Y3(1:clip) ;  % Template vector is Hot Wire
 
 %Filter the data
 search_r = Low_Pass_Filter(search_r,lpf_cutoff_value,f); %Filter the data
-template = Low_Pass_Filter(template,70,f); %Filter the data
+template = Low_Pass_Filter(template,lpf_cutoff_value,f); %Filter the data
 
 %Filter the data
 % search_r = High_Pass_Filter(search_r,hpf_cutoff_value,f); %Filter the data (hpf)
@@ -142,6 +143,8 @@ xlabel('\Delta x/ \delta ')
 ylabel('R')
 legend('Frequency Domain Cross Correlation','Spatial Domain Cross Correlation')
 
+return
+
 %% Compute FFT correlation at every point.
 %Load all data in
 data_size=size(hw_matrix);
@@ -187,6 +190,8 @@ xlim([-3 3])
 ylim([0 max(data_y/delta)])
 xlabel('\Delta x')
 ylabel('y/\delta')
+figure_format(1) ;
+
 
 
 

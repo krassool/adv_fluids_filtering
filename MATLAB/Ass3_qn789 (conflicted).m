@@ -134,7 +134,8 @@ for t_clip = [1 5 30]
     wire_bst_clip = wire_bst(1:t_clip*Fs) ;
     N_clip        = length(wire_bst_clip) ;       
     df_clip       = 1/(N_clip.*dt)  ; % Frequency interval for clipped signal
-    f_clip        = n_spat.*df_clip ; % Frequency vector to match clipped 'g'
+    n_spat_clip   = 0:(N_clip/2)    ; % All mode numbers up to nyquist
+    f_clip        = n_spat_clip.*df_clip;  % Frequency vector to match clipped 'g'
    
     % Implement sprectal analysis
     msub_clip    = wire_bst_clip-mean(wire_bst_clip);
@@ -148,24 +149,18 @@ for t_clip = [1 5 30]
     figure_format(2);
 end
 
-%% ENSEBLE AVERAGE THEM FOR THE FIRST SIGNAL
+%% CLIP THEM OUT OF EVERY SIG
 
 t_selected     = 5 ;
-n_sections     = tf/t_selected  ;
-N_sel          = Fs.*t_selected ;       
-df_sel         = 1/(N_sel.*dt)  ; % Frequency interval for clipped signal
-f_sel          = n_spat.*df_sel ;  % Frequency vector to match clipped 'g'
-
-hw_bst_clipmat = zeros(length(burst_hw_matrix)/n_sections,n_sections) ;
+n_sections     = tf/t_selected;
+hw_bst_clipmat = zeros(length(burst_hw_matrix),n_sections) ;
 t1_wire_bst    = burst_hw_matrix(:,1) ;
-
-% Make into a matrix
+% 
 for loopvar1 = 1 : n_sections
     st_var  = N*(loopvar1-1)/n_sections+1;
     end_var = loopvar1*N/n_sections;
     hw_bst_clipmat(:,loopvar1) = t1_wire_bst(st_var:end_var);
-    
 end
-
+% ENSEBLE AVERAGE THEM FOR THE FIRST SIGNAL
 
 % ENSEMBLE AVERAGE THEM FOR EVERY SIGNAL

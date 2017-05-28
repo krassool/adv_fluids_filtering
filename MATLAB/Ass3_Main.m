@@ -38,7 +38,7 @@ title('Low pass filtered data')
 xlim([1 2])
 xlabel('t [s]')
 ylabel('u [m/s]')
-figure_format ;
+figure_format(1) ;
 
 %% High pass filter
 %Call HPF function
@@ -52,7 +52,7 @@ title('High pass filtered data')
 xlim([1 1.4])
 xlabel('t [s]')
 ylabel('u [m/s]')
-figure_format ;
+figure_format(1) ;
 
 %% Qn3, Cross Correlation
 %%%%MUST USE FILTERED DATA!!!! %%%
@@ -134,7 +134,7 @@ ax.FontSize = 12;
 ax.TickDir = 'out';
 ax.TickLength = [0.02 0.02];
 ax.XLim = [min(Delta_x_fft) max(Delta_x_fft)];
-figure_format ;
+figure_format(1) ;
 
 % legend()
 title('Cross Correlation')
@@ -187,7 +187,6 @@ end
 fft_corr_matrix=fft_corr_matrix';
 
 %% Convert to required x-axis
-
 % 
 pcolor(dx_loop',data_y/delta, fft_corr_matrix); shading interp
 

@@ -96,13 +96,8 @@ zero_if_same = A_spectral - variance   % Check if signals same
 
 % Do the plots
 
-<<<<<<< HEAD
 figure ; semilogx(f,f.*phi) ;
     title('Pre-multiplied Power Spectral Density Plot ')
-=======
-figure ; semilogx(f,f.*phi) ; 
-title('Spectral Power Density Plot')
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
 xlabel('frequency - f (Hz)')
 ylabel('Freqency \times Power Spectral Density - f \phi')
 % figure_format(1)
@@ -139,15 +134,9 @@ for t_clip = [1 5 30]
     wire_bst_clip = wire_bst(1:t_clip*Fs) ;
     N_clip        = length(wire_bst_clip) ;
     df_clip       = 1/(N_clip.*dt)  ; % Frequency interval for clipped signal
-<<<<<<< HEAD
     n_spat_clip   = 0:(N_clip/2)    ; % All mode numbers up to nyquist
     f_clip        = n_spat_clip.*df_clip;  % Frequency vector to match clipped 'g'
     
-=======
-    n_spat_clip   = 0:N_clip/2;
-    f_clip        = n_spat_clip.*df_clip ; % Frequency vector to match clipped 'g'
-   
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
     % Implement sprectal analysis
     msub_clip    = wire_bst_clip-mean(wire_bst_clip);
     fft_bst_clip = fft(msub_clip)./N_clip   ; % Take an FFT of the data, normalise to length
@@ -155,13 +144,7 @@ for t_clip = [1 5 30]
     phi_clip      = 2.*fft_bst_clip.*conj(fft_bst_clip)./df_clip ; % Define power spectral density
     phi_clip      = phi_clip.';                      % Transpose phi for pre-multiplication
     
-<<<<<<< HEAD
     % Figure
-=======
-    size(f_clip)
-    size(phi_clip)
-    % Figure 
->>>>>>> 9b2d1b5bb72d8f5645b259c7def3eeb86e7a6fb8
     figure; semilogx(f_clip,f_clip.*phi_clip)
     title('Pre-multiplied Power Spectral Density Plot ')
     xlabel('frequency - f (Hz)')
@@ -255,15 +238,3 @@ figure ; semilogx(f_sel,pm_psd)
 title('Final stage of averaging/converging')
 
 f_sel_CF = log(f_sel);
-[xData, yData] = prepareCurveData( f_sel_CF, pm_psd );
-ft = fittype( 'poly9' );% Set up fittype and options.
-[fitresult, gof] = fit( xData, yData, ft );% Fit model to data.
-
-% Plot fit with data
-xrange = linspace(-0.6931,9.2103,1e3);
-y_new = fitresult(xrange );
-figure ; h = semilogx(exp(xData),yData,'b.') ; hold on ;
-semilogx(exp(xrange),y_new)
-xlabel('Frequency') ; ylabel('Pre-Multiplied PSD') ; grid on
-legend('Spectral Density Scatter','Approximate energy function')
-figure_format(1);

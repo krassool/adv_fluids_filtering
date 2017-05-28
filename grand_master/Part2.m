@@ -74,6 +74,8 @@ ylabel('C_f');
 xlabel('Re_{x}');
 legend('Smooth wall');
 
+return
+
 %% Rough Wall
 % Get logarithmic spacing of d_plus
 Re_theta_r = zeros(size(d_plus));

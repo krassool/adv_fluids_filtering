@@ -33,7 +33,7 @@ hpf_cutoff_value = 5   ;
 %Call LPF function
 u_lpf=Low_Pass_Filter(hf_Y3,lpf_cutoff_value,f);
 %plot results
-lpffig = figure ; 
+figure ; 
 hold on ;  plot([1:N_3]*dt,hf_Y3,'g','linewidth',1) ; plot([1:N_3]*dt,u_lpf,'k','linewidth',4); plot([1:N_3]*dt,u_lpf,'linewidth',2,'color',[255 105 180]./256) ; %axis([0,1e3,0,3e-3]) ;
 legend('Pre-filter Data','Filtered Data')
 xlim([1 2])
@@ -49,7 +49,7 @@ u_hpf=High_Pass_Filter(hf_Y3,hpf_cutoff_value,f);
 
 %plot results
 %high pass filtered with mean subtracted original
-lpffig = figure ; 
+figure ; 
 hold on ;  plot([1:N_3]*dt,hf_Y3-mean(hf_Y3),'g','linewidth',1) ; plot([1:N_3]*dt,u_hpf,'k','linewidth',4); plot([1:N_3]*dt,u_hpf,'linewidth',2,'color',[255 105 180]./256) ; %axis([0,1e3,0,3e-3]) ;
 legend('Pre-filter Data','Filtered Data')
 title('High pass filtered data')

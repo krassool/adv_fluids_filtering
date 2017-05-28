@@ -9,11 +9,11 @@ clc, clear, close all
 Data_Loader
 
 %% Things that are mostly constant
-    
+
 Re_tau = 14000 ; % Reynolds shear stress
 n_pos  = 40    ; % Number of wall normal position
 Fs     = 10e3  ; % Sampling frequency
-delta = 0.326  ; % Boundary layer thickness (m) 
+delta = 0.326  ; % Boundary layer thickness (m)
 N = length(hf_matrix) ; % Length of the clipped time series signal
 tf = 30               ; % Experiment time (s)
 dt = 1/Fs             ; % Time interval
@@ -39,7 +39,7 @@ cutoff_hf = hf_f_lim  ; % High frequency cut off
 Glpf(n_c_lpf:end-n_c_lpf+2) = 0     ; % Cut off them high frequncies
 wire20_lpf = N.*real(ifft(Glpf))    ; % Re-construct the fourier signal
 
-figure ; plot(film20) ; hold on ; plot(wire20_lpf) ; 
+figure ; plot(film20) ; hold on ; plot(wire20_lpf) ;
 title('Comparison of original and high pass filtered data')
 
 %% Conditional averaging
@@ -64,7 +64,7 @@ for i = 1:length(cond_indicies)
 end
 
 cond_average = cond_average./length(cond_indicies);
-figure ; plot(cond_average) ; 
+figure ; plot(cond_average) ;
 title('Conditionally averaged plot')
 
 %%  Spectral Power Density
@@ -96,8 +96,8 @@ zero_if_same = A_spectral - variance   % Check if signals same
 
 % Do the plots
 
-figure ; semilogx(f,f.*phi) ; 
-title('Pre-multiplied energy plot (to make meaningful again)')
+figure ; semilogx(f,f.*phi) ;
+    title('Pre-multiplied Power Spectral Density Plot ')
 xlabel('frequency - f (Hz)')
 ylabel('Freqency \times Power Spectral Density - f \phi')
 figure_format(1)
@@ -108,12 +108,12 @@ A2  = 4.*fft_wireb.*conj(fft_wireb)        ;
 sA2 = sum(A2)/2
 meanu = mean(burst_hw_1_msub.^2)
 
-% HEAD CHECK 2 -> MODIFIED PARSEVALS HOLDS 
+% HEAD CHECK 2 -> MODIFIED PARSEVALS HOLDS
 A2_o2 = A2(1:((N/2)+1));
 sA2_o2 = sum(A2_o2)/2
 meanu2 = mean(burst_hw_1_msub.^2)
 
-%% Question 9 : De-hairy function 
+%% Question 9 : De-hairy function
 
 % Re-define constants as nessesary
 Fs     = 30e3       ; % Sampling frequency
@@ -129,14 +129,14 @@ wire_bst = burst_hw_matrix(:,1);
 close all
 
 for t_clip = [1 5 30]
- 
+    
     % Re-define the signal and relevant constants
     wire_bst_clip = wire_bst(1:t_clip*Fs) ;
-    N_clip        = length(wire_bst_clip) ;       
+    N_clip        = length(wire_bst_clip) ;
     df_clip       = 1/(N_clip.*dt)  ; % Frequency interval for clipped signal
     n_spat_clip   = 0:(N_clip/2)    ; % All mode numbers up to nyquist
     f_clip        = n_spat_clip.*df_clip;  % Frequency vector to match clipped 'g'
-   
+    
     % Implement sprectal analysis
     msub_clip    = wire_bst_clip-mean(wire_bst_clip);
     fft_bst_clip = fft(msub_clip)./N_clip   ; % Take an FFT of the data, normalise to length
@@ -144,8 +144,11 @@ for t_clip = [1 5 30]
     phi_clip      = 2.*fft_bst_clip.*conj(fft_bst_clip)./df_clip ; % Define power spectral density
     phi_clip      = phi_clip.';                      % Transpose phi for pre-multiplication
     
-    % Figure 
+    % Figure
     figure; semilogx(f_clip,f_clip.*phi_clip)
+    title('Pre-multiplied Power Spectral Density Plot ')
+    xlabel('frequency - f (Hz)')
+    ylabel('Freqency \times Power Spectral Density - f \phi')
     figure_format(2);
 end
 

@@ -28,7 +28,7 @@ Cf       = zeros(size(dplus_E));
 
 for i = 1:length(dplus_E)
     
-    z_plus = logspace(-4,log10(dplus_E(i)),n_point);
+    z_plus = logspace(-2,log10(dplus_E(i)),n_point);
     
     eta = z_plus./dplus_E(i);
 
